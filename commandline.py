@@ -3,6 +3,7 @@ import getpass
 import argparse
 
 from engine import ChipmunkEngine
+import providers 
 
 def show_menu():
     print('-- Chipmunk Menu --')
@@ -30,6 +31,11 @@ if __name__ == "__main__":
             key = input()
             if key=='q':
                 break
+            if key=='a':
+                for c in providers.get_provider_classes():
+                    print(c.meta.name)
+                # TODO display list of providers, ask user to choose one
+                # Then call login, and then add to database
 
 
     
