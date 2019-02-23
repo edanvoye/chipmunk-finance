@@ -15,6 +15,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    ## Login
+
     username = input("Username: ")
     password = getpass.getpass()
 
@@ -32,17 +34,17 @@ if __name__ == "__main__":
     else:
         cm.login(username, password)
 
-    # if args.interactive:
-    #     while 1:
-    #         show_menu()
-    #         key = input()
-    #         if key=='q':
-    #             break
-    #         if key=='a':
-    #             for c in providers.get_provider_classes():
-    #                 print(c.meta.name)
-    #             # TODO display list of providers, ask user to choose one
-    #             # Then call login, and then add to database
+    ## Operations
 
-
-    
+    if args.list:
+        print('Listing Accounts for user %s' % cm.username)
+        # TODO
+    if args.add:
+        print('Adding Provider for user %s' % cm.username)
+        # TODO
+    if args.update:
+        print('Updating transactions for user %s' % cm.username)
+        # TODO
+    if args.transactions:
+        print('Display Transactions for user %s' % cm.username)
+        # TODO
