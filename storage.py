@@ -3,7 +3,7 @@ import os
 import sqlite3
 import random
 
-def cipher_from_password(password, salt):
+def _cipher_from_password(password, salt):
     import base64
     from cryptography.fernet import Fernet
     from cryptography.hazmat.backends import default_backend
@@ -20,7 +20,7 @@ def cipher_from_password(password, salt):
     key = base64.urlsafe_b64encode(kdf.derive(password.encode('utf-8')))
     return Fernet(key)
 
-def sha1hash(s):
+def _sha1hash(s):
     import hashlib
     return hashlib.sha1(s.encode('utf-8')).hexdigest()
 
@@ -29,12 +29,12 @@ class UserData():
         self.conn = None
         self.cipher = None
 
-    def encrypt(self, text):
+    def _encrypt(self, text):
         if not self.cipher:
             raise Exception('No Cipher')
         return self.cipher.encrypt(text.encode('utf-8'))
 
-    def decrypt(self, text):
+    def _decrypt(self, text):
         if not self.cipher:
             raise Exception('No Cipher')
         return self.cipher.decrypt(text).decode("utf-8")
@@ -59,9 +59,9 @@ class UserData():
             raise Exception('Database file already exists')
 
         # Generate salt and password hash
-        salt1 = sha1hash(str(random.random()))
-        salt2 = sha1hash(str(random.random()))
-        password_hash = sha1hash('%s%s' % (salt1,password))
+        salt1 = _sha1hash(str(random.random()))
+        salt2 = _sha1hash(str(random.random()))
+        password_hash = _sha1hash('%s%s' % (salt1,password))
 
         # Create database
         conn = sqlite3.connect(db_file)
@@ -89,7 +89,7 @@ class UserData():
         conn.commit()
                 
         self.conn = conn
-        self.cipher = cipher_from_password(password,bytes.fromhex(salt2))
+        self.cipher = _cipher_from_password(password,bytes.fromhex(salt2))
 
     def open(self, username, password):
 
@@ -107,9 +107,9 @@ class UserData():
         salt1 = row[0]
         salt2 = row[1]
 
-        if not row[2] == sha1hash('%s%s' % (salt1,password)):
+        if not row[2] == _sha1hash('%s%s' % (salt1,password)):
             raise Exception('Wrong password')
 
         self.conn = conn
-        self.cipher = cipher_from_password(password,bytes.fromhex(salt2))
+        self.cipher = _cipher_from_password(password,bytes.fromhex(salt2))
 

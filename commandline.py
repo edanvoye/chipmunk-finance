@@ -39,12 +39,15 @@ if __name__ == "__main__":
     if args.list:
         print('Listing Accounts for user %s' % cm.username)
         # TODO
+        
     if args.add:
         print('Adding Provider for user %s' % cm.username)
         # TODO
+
     if args.update:
         print('Updating transactions for user %s' % cm.username)
         # TODO
+
     if args.transactions:
         print('Display Transactions for user %s' % cm.username)
         # TODO
