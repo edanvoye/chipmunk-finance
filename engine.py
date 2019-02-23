@@ -17,19 +17,27 @@ class ChipmunkEngine():
     def __init__(self):
         self.data = None
         self.provider_classes = {}
-
         self.load_providers_plugins()
 
-    def login(self, username, password):
+    def user_exists(self, username):
+        data = UserData()
+        return data.exists(username)
 
-        try:
-            self.data = UserData()
-            if not data.exists(username):
-                self.data.create(username,password)
-            else:
-                self.data.open(username,password)
-        except:
-            self.data = None
+    def create(self, username, password):
+        self.data = None
+        data = UserData()
+        data.create(username,password)
+        self.data = data
+
+    def login(self, username, password):
+        self.data = None
+
+        data = UserData()
+        if not data.exists(username):
+            raise Exception('User does not exist')
+        data.open(username,password)
+
+        self.data = data
 
     def load_providers_plugins(self):
         # TODO 
