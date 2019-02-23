@@ -28,6 +28,7 @@ class ChipmunkEngine():
         data = UserData()
         data.create(username,password)
         self.data = data
+        self.username = username
 
     def login(self, username, password):
         self.data = None
@@ -38,6 +39,7 @@ class ChipmunkEngine():
         data.open(username,password)
 
         self.data = data
+        self.username = username
 
     def load_providers_plugins(self):
         # TODO 
