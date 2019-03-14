@@ -57,7 +57,14 @@ if __name__ == "__main__":
 
     if args.update:
         print('Updating transactions for user %s' % cm.username)
-        # TODO
+
+        def progress_cb(message):
+            print(message)
+
+        def user_query(label):
+            return input(label + ': ')
+
+        cm.update_providers(progress_cb, user_query)
 
     if args.transactions:
         print('Display Transactions for user %s' % cm.username)

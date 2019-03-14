@@ -2,6 +2,8 @@
 import os
 import sqlite3
 import random
+import json
+import datetime
 
 def _cipher_from_password(password, salt):
     import base64
@@ -40,7 +42,10 @@ class UserData():
     def _decrypt(self, text):
         if not self.cipher:
             raise Exception('No Cipher')
-        return self.cipher.decrypt(text).decode("utf-8")
+        if isinstance(text, (bytes, bytearray)):
+            return self.cipher.decrypt(text).decode("utf-8")
+        else:
+            return text
 
     def exists(self, username):
         return os.path.exists(os.path.join('userdata', username + '.db'))
@@ -155,3 +160,28 @@ class UserData():
         self.conn = conn
         self.cipher = _cipher_from_password(password,bytes.fromhex(salt2))
 
+    def add_provider(self, name, data):
+        cur = self.conn.cursor()
+        sql = ''' 
+            INSERT INTO providers(name,data,last_login)
+              VALUES(?,?,?) '''
+        encrypted_data = self._encrypt(json.dumps(data))
+        ret = cur.execute(sql, (name,encrypted_data,datetime.datetime.now()))
+
+        self.conn.commit()
+
+    def update_provider(self, id, data):
+        cur = self.conn.cursor()
+        sql = ''' 
+            UPDATE providers SET data=?,last_login=? WHERE id=? '''
+        encrypted_data = self._encrypt(json.dumps(data))
+        ret = cur.execute(sql, (encrypted_data,datetime.datetime.now(),id))
+
+        self.conn.commit()
+
+    def registered_provider_list(self):
+        cur = self.conn.cursor()
+        cur.execute("SELECT id,name,data FROM providers")
+        rows = cur.fetchall()
+        # [print(row) for row in rows] # DEBUG
+        return [(row[0], row[1], json.loads(self._decrypt(row[2]))) for row in rows]

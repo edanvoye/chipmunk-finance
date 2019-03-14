@@ -73,11 +73,39 @@ class ChipmunkEngine():
         provider.update(get_user_data, store_user_data)
 
         # Login is a success, store provider and user data in DB
-        # TODO temp_user_data
-        print('TODO Saving user data in database')
-        print(temp_user_data)
+        self.data.add_provider(provider_name, temp_user_data)
 
-    # List added providers + status
-    # Update provider
-    # List accounts
-    # List account transations
+    def update_providers(self, progress_cb, user_query):
+
+        progress_cb('Updating All Providers')
+
+        # List all registered providers from database
+        providers = self.data.registered_provider_list()
+
+        # For each registered provider
+        for id,name,data in providers:
+            progress_cb('Updating Provider #%d: %s' % (id,name))
+
+            # Instanciate provider
+            if not name in self.provider_classes:
+                raise Exception('Provider plugin does not exist: ' + name)
+            provider = self.provider_classes[name]()
+
+            def get_user_data(label):
+                return data[label] if label in data else user_query(label)
+            def store_user_data(label, value):
+                if data.get(label) != value:
+                    data[label] = value
+            def add_account(unique_id, data):
+                # TODO Add new account (check if it exists)
+                # TODO Also update account's last_update
+                pass
+            def add_transaction(data):
+                # TODO Add new transaction if it does not exist
+                pass
+                
+            # Call plugin to update provider via web scraping
+            provider.update(get_user_data, store_user_data, add_account, add_transaction)
+
+            # Update provider in database
+            self.data.update_provider(id, data)
