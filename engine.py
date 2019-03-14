@@ -86,6 +86,8 @@ class ChipmunkEngine():
         return account_id
 
     def _add_transaction(self, account_id, data):
+        # TODO check if transaction already exists
+        # TODO add transaction to db
         return 0 # return DB id for this transaction
 
     def find_account(self, provider_id, uid):
