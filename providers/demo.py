@@ -3,6 +3,9 @@ from providers.base import ProviderPlugin
 
 class DemoBankPlugin(ProviderPlugin):
 
+    # This is a dummy plugin for testing. Instead of scraping the webpage, the values
+    # are hardcoded.
+
     def update(self, get_user_data, store_user_data, add_account=None, add_transaction=None):
         # Demo Provider
 
@@ -30,13 +33,12 @@ class DemoBankPlugin(ProviderPlugin):
 
         if add_account:
             # Ready to load accounts
-            # TODO
-            pass
+            add_account('1001', {'name':'Saving','currency':'USD','balance':34.12})
+            add_account('1002', {'name':'Checking','currency':'USD','balance':123.45})
 
         if add_transaction:
             # Ready to load transactions
-            # TODO
-            pass
+            add_transaction({'timestamp':'2018-12-31','type':'DEPOSIT','amount':3.45,'description':'EFT to savings'})
 
     class meta:
         name = 'demo'
