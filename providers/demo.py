@@ -42,4 +42,4 @@ class DemoBankPlugin(ProviderPlugin):
 
     class meta:
         name = 'demo'
-        description = 'Demo'
+        description = 'Demo provider with hardcoded values'
