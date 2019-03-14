@@ -30,6 +30,8 @@ class UserData():
 
     DB_VERSION = 1
 
+    option_encrypt_credentials = True
+
     def __init__(self):
         self.conn = None
         self.cipher = None
@@ -165,8 +167,10 @@ class UserData():
         sql = ''' 
             INSERT INTO providers(name,data,last_login)
               VALUES(?,?,?) '''
-        encrypted_data = self._encrypt(json.dumps(data))
-        ret = cur.execute(sql, (name,encrypted_data,datetime.datetime.now()))
+        data = json.dumps(data)
+        if option_encrypt_credentials:
+            data = self._encrypt(data)
+        ret = cur.execute(sql, (name,data,datetime.datetime.now()))
 
         self.conn.commit()
 
