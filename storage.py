@@ -185,3 +185,36 @@ class UserData():
         rows = cur.fetchall()
         # [print(row) for row in rows] # DEBUG
         return [(row[0], row[1], json.loads(self._decrypt(row[2]))) for row in rows]
+
+    def get_account_id(self, provider_id, uid):
+        cur = self.conn.cursor()
+        cur.execute("SELECT id FROM accounts WHERE fk_provider=? AND name=?", (provider_id, uid))
+        row = cur.fetchone()
+        if row:
+            return row[0]
+
+    def update_account(self, account_id, data):
+
+        # TODO Update account data ?
+
+        cur = self.conn.cursor()
+        sql = ''' 
+            UPDATE accounts SET last_update=? WHERE id=? '''
+        ret = cur.execute(sql, (datetime.datetime.now(),account_id))
+
+        self.conn.commit()
+
+    def create_account(self, provider_id, uid, data):
+
+        currency = data.get('currency', '')
+        balance = data.get('balance', 0.0)
+
+        cur = self.conn.cursor()
+        sql = ''' 
+            INSERT INTO accounts(name,last_update,fk_provider,currency,balance)
+              VALUES(?,?,?,?,?) '''
+        ret = cur.execute(sql, (uid,datetime.datetime.now(),provider_id, currency, balance))
+
+        self.conn.commit()
+
+        return cur.lastrowid

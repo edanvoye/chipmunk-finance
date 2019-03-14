@@ -75,6 +75,23 @@ class ChipmunkEngine():
         # Login is a success, store provider and user data in DB
         self.data.add_provider(provider_name, temp_user_data)
 
+    def _add_account(self, provider_id, uid, data):
+        account_id = self.find_account(provider_id, uid)
+        if account_id:
+            # Update last_update
+            self.data.update_account(account_id, data)
+        else:
+            # Create Account
+            account_id = self.data.create_account(provider_id, uid, data)
+        return account_id
+
+    def _add_transaction(self, account_id, data):
+        return 0 # return DB id for this transaction
+
+    def find_account(self, provider_id, uid):
+        # Given a provider DB id, and an account uid, find account DB id
+        return self.data.get_account_id(provider_id, uid)
+
     def update_providers(self, progress_cb, user_query):
 
         progress_cb('Updating All Providers')
@@ -96,13 +113,12 @@ class ChipmunkEngine():
             def store_user_data(label, value):
                 if data.get(label) != value:
                     data[label] = value
-            def add_account(unique_id, data):
-                # TODO Add new account (check if it exists)
-                # TODO Also update account's last_update
-                pass
-            def add_transaction(data):
-                # TODO Add new transaction if it does not exist
-                pass
+            def add_account(uid, data):
+                return self._add_account(id, uid, data)
+            def add_transaction(account_uid, data):
+                account_id = self.find_account(id, account_uid)
+                if account_id:
+                    return self._add_transaction(account_id, data)
                 
             # Call plugin to update provider via web scraping
             provider.update(get_user_data, store_user_data, add_account, add_transaction)
