@@ -25,6 +25,9 @@ def _sha1hash(s):
     return hashlib.sha1(s.encode('utf-8')).hexdigest()
 
 class UserData():
+
+    DB_VERSION = 1
+
     def __init__(self):
         self.conn = None
         self.cipher = None
@@ -41,6 +44,54 @@ class UserData():
 
     def exists(self, username):
         return os.path.exists(os.path.join('userdata', username + '.db'))
+
+    def _update_tables(self, conn):
+        # Create table to store user data
+        c = conn.cursor()
+        sql = '''
+            CREATE TABLE IF NOT EXISTS users (
+                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        username TEXT NOT NULL,
+                                        password_hash TEXT,
+                                        salt1 TEXT,
+                                        salt2 TEXT,
+                                        integer db_version NOT NULL
+                                    );
+        '''
+        c.execute(sql)
+        sql = '''
+            CREATE TABLE IF NOT EXISTS providers (
+                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        name TEXT NOT NULL,
+                                        data TEXT,
+                                        last_login TIMESTAMP
+                                    );
+        '''
+        c.execute(sql)
+        sql = '''
+            CREATE TABLE IF NOT EXISTS accounts (
+                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        name TEXT NOT NULL,
+                                        currency TEXT NOT NULL,
+                                        balance REAL,
+                                        last_update TIMESTAMP,
+                                        fk_provider INTEGER,
+                                        FOREIGN KEY(fk_provider) REFERENCES providers(id)
+                                    );
+        '''
+        c.execute(sql)
+        sql = '''
+            CREATE TABLE IF NOT EXISTS transactions (
+                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        description TEXT NOT NULL,
+                                        type TEXT NOT NULL,
+                                        amount REAL,
+                                        added TIMESTAMP,
+                                        fk_account INTEGER,
+                                        FOREIGN KEY(fk_account) REFERENCES accounts(id)
+                                    );
+        '''
+        c.execute(sql)
 
     def create(self, username, password):
 
@@ -65,26 +116,14 @@ class UserData():
 
         # Create database
         conn = sqlite3.connect(db_file)
-
-        # Create table to store user data
-        create_table_sql = '''
-            CREATE TABLE IF NOT EXISTS users (
-                                        id integer PRIMARY KEY,
-                                        username text NOT NULL,
-                                        password_hash text,
-                                        salt1 text,
-                                        salt2 text
-                                    );
-        '''
-        c = conn.cursor()
-        c.execute(create_table_sql)
+        self._update_tables(conn)
 
         # Create one row in user table
         sql = ''' 
-            INSERT INTO users(username,password_hash,salt1,salt2)
+            INSERT INTO users(username,password_hash,salt1,salt2,db_version)
               VALUES(?,?,?,?) '''
         cur = conn.cursor()
-        ret = cur.execute(sql, (username,password_hash,salt1,salt2))
+        ret = cur.execute(sql, (username,password_hash,salt1,salt2,DB_VERSION))
 
         conn.commit()
                 
@@ -98,6 +137,9 @@ class UserData():
 
         db_file = os.path.join('userdata', username + '.db')
         conn = sqlite3.connect(db_file)
+
+        # Update DB if the tables have changed
+        self._update_tables(conn)
 
         # Validate password with salt
         cur = conn.cursor()
