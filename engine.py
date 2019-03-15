@@ -95,6 +95,12 @@ class ChipmunkEngine():
         # Given a provider DB id, and an account uid, find account DB id
         return self.data.get_account_id(provider_id, uid)
 
+    def iter_providers(self):
+        return self.data.iter_providers()
+
+    def iter_accounts(self, provider_id):
+        return self.data.iter_accounts(provider_id)
+
     def update_providers(self, progress_cb, user_query):
 
         progress_cb('Updating All Providers')

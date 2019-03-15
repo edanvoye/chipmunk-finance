@@ -38,7 +38,12 @@ if __name__ == "__main__":
 
     if args.list:
         print('Listing Accounts for user %s' % cm.username)
-        # TODO
+        for provider in cm.iter_providers():
+            print('Provider %s (Last update: %s)' % (provider['name'], provider['last_login']))
+            for account in cm.iter_accounts(provider['id']):
+                print(' Account %s' % account['name'])
+                for key in account:
+                    print('  %s: %s' % (key, account[key]))
         
     if args.add:
         print('Adding Provider for user %s' % cm.username)

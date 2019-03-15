@@ -226,6 +226,18 @@ class UserData():
 
         return cur.lastrowid
 
+    def iter_providers(self):
+        cur = self.conn.cursor()
+        cur.execute("SELECT id,name,last_login FROM providers")
+        for id,name,last_login in cur.fetchall():
+            yield {'id':id, 'name':name, 'last_login':last_login}
+
+    def iter_accounts(self, provider_id):
+        cur = self.conn.cursor()
+        cur.execute("SELECT id,name,(SELECT count(*) FROM transactions WHERE fk_account=a.id) FROM accounts as a WHERE fk_provider=?", (provider_id,))
+        for id,name,nb_transactions in cur.fetchall():
+            yield {'id':id, 'name':name, 'transaction_count':nb_transactions}
+
     def find_transaction(self, account_id, data):
 
         description = data.get('description', '')
