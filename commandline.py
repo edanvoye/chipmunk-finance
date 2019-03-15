@@ -8,7 +8,7 @@ import providers
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-l", "--list", action="store_true", help="List accounts for user")
+    parser.add_argument("-l", "--accounts", action="store_true", help="List accounts for user")
     parser.add_argument("-a", "--add", action="store_true", help="Add provider")
     parser.add_argument("-u", "--update", action="store_true", help="Update all accounts")
     parser.add_argument("-t", "--transactions", action="store_true", help="Show transactions")
@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     ## Operations
 
-    if args.list:
+    if args.accounts:
         print('Listing Accounts for user %s' % cm.username)
         for provider in cm.iter_providers():
             print('Provider %s (Last update: %s)' % (provider['name'], provider['last_login']))
@@ -73,4 +73,14 @@ if __name__ == "__main__":
 
     if args.transactions:
         print('Display Transactions for user %s' % cm.username)
-        # TODO
+        for provider in cm.iter_providers():
+            for account in cm.iter_accounts(provider['id']):
+                print('Provider:%s Account:%s' % (provider['name'], account['name']))
+                for transaction in cm.iter_transactions(account['id']):
+                    print(' %s [%s] %.2f %s (%s)' % (
+                            transaction['type'],
+                            transaction['description'],
+                            transaction['amount'],
+                            account['currency'],
+                            transaction['date'],
+                    ))
