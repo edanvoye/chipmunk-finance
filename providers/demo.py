@@ -38,7 +38,7 @@ class DemoBankPlugin(ProviderPlugin):
 
         if add_transaction:
             # Ready to load transactions
-            add_transaction('1001', {'timestamp':'2018-12-31','type':'DEPOSIT','amount':3.45,'description':'EFT to savings'})
+            add_transaction('1001', {'date':'2018-12-31','type':'DEPOSIT','amount':3.45,'description':'EFT to savings'})
 
     class meta:
         name = 'demo'

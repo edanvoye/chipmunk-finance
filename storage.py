@@ -62,7 +62,7 @@ class UserData():
                                         password_hash TEXT,
                                         salt1 TEXT,
                                         salt2 TEXT,
-                                        integer db_version NOT NULL
+                                        db_version INTEGER NOT NULL
                                     );
         '''
         c.execute(sql)
@@ -93,6 +93,7 @@ class UserData():
                                         description TEXT NOT NULL,
                                         type TEXT NOT NULL,
                                         amount REAL,
+                                        date TEXT,
                                         added TIMESTAMP,
                                         fk_account INTEGER,
                                         FOREIGN KEY(fk_account) REFERENCES accounts(id)
@@ -128,9 +129,9 @@ class UserData():
         # Create one row in user table
         sql = ''' 
             INSERT INTO users(username,password_hash,salt1,salt2,db_version)
-              VALUES(?,?,?,?) '''
+              VALUES(?,?,?,?,?) '''
         cur = conn.cursor()
-        ret = cur.execute(sql, (username,password_hash,salt1,salt2,DB_VERSION))
+        ret = cur.execute(sql, (username,password_hash,salt1,salt2,self.DB_VERSION))
 
         conn.commit()
                 
@@ -153,6 +154,9 @@ class UserData():
         cur.execute("SELECT salt1,salt2,password_hash FROM users WHERE username=?", (username,))
         row = cur.fetchone()
 
+        if not row:
+            raise Exception('Database error, user not found')
+
         salt1 = row[0]
         salt2 = row[1]
 
@@ -168,7 +172,7 @@ class UserData():
             INSERT INTO providers(name,data,last_login)
               VALUES(?,?,?) '''
         data = json.dumps(data)
-        if option_encrypt_credentials:
+        if self.option_encrypt_credentials:
             data = self._encrypt(data)
         ret = cur.execute(sql, (name,data,datetime.datetime.now()))
 
@@ -220,5 +224,39 @@ class UserData():
         ret = cur.execute(sql, (uid,datetime.datetime.now(),provider_id, currency, balance))
 
         self.conn.commit()
+
+        return cur.lastrowid
+
+    def find_transaction(self, account_id, data):
+
+        description = data.get('description', '')
+        ttype = data.get('type', 'unknown')
+        amount = data.get('amount', 0.0)
+        date = data.get('date', 'unknown')
+
+        cur = self.conn.cursor()
+        cur.execute("SELECT id FROM transactions WHERE fk_account=? AND description=? AND type=? AND amount=? AND date=?", 
+            (account_id,description,ttype,amount,date))
+        row = cur.fetchone()
+        if row:
+            print('DEBUG Found existing transaction %d' % row[0])
+            return row[0]
+
+    def add_transaction(self, account_id, data):
+
+        description = data.get('description', '')
+        ttype = data.get('type', 'unknown')
+        amount = data.get('amount', 0.0)
+        date = data.get('date', 'unknown')
+
+        cur = self.conn.cursor()
+        sql = ''' 
+            INSERT INTO transactions (description,type,amount,date,added,fk_account)
+              VALUES(?,?,?,?,?,?) '''
+        ret = cur.execute(sql, (description,ttype,amount,date,datetime.datetime.now(),account_id))
+
+        self.conn.commit()
+
+        print('DEBUG Adding transaction as %d' % cur.lastrowid)
 
         return cur.lastrowid
