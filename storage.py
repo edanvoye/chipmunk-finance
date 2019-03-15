@@ -191,7 +191,6 @@ class UserData():
         cur = self.conn.cursor()
         cur.execute("SELECT id,name,data FROM providers")
         rows = cur.fetchall()
-        # [print(row) for row in rows] # DEBUG
         return [(row[0], row[1], json.loads(self._decrypt(row[2]))) for row in rows]
 
     def get_account_id(self, provider_id, uid):
@@ -239,7 +238,6 @@ class UserData():
             (account_id,description,ttype,amount,date))
         row = cur.fetchone()
         if row:
-            print('DEBUG Found existing transaction %d' % row[0])
             return row[0]
 
     def add_transaction(self, account_id, data):
@@ -256,7 +254,5 @@ class UserData():
         ret = cur.execute(sql, (description,ttype,amount,date,datetime.datetime.now(),account_id))
 
         self.conn.commit()
-
-        print('DEBUG Adding transaction as %d' % cur.lastrowid)
 
         return cur.lastrowid
