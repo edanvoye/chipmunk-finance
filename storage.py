@@ -93,17 +93,17 @@ class UserData():
         sql = '''
             CREATE TABLE IF NOT EXISTS transactions (
                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        bank_id TEXT NOT NULL,
                                         description TEXT NOT NULL,
                                         type TEXT NOT NULL,
                                         amount REAL,
-                                        date TEXT,
+                                        date TIMESTAMP,
                                         added TIMESTAMP,
+                                        data TEXT,
                                         fk_account INTEGER,
                                         FOREIGN KEY(fk_account) REFERENCES accounts(id)
                                     );
         '''
-        # TODO add bank id and use for find existing
-        # TODO add field for extra data
         c.execute(sql)
 
     def create(self, username, password):
@@ -227,7 +227,7 @@ class UserData():
         cur = self.conn.cursor()
         sql = ''' 
             INSERT INTO accounts(bank_id,name,type,description,last_update,fk_provider,currency,balance)
-              VALUES(?,?,?,?,?) '''
+              VALUES(?,?,?,?,?,?,?,?) '''
         ret = cur.execute(sql, (uid,name,atype,description,datetime.datetime.now(),provider_id, currency, balance))
 
         self.conn.commit()
@@ -252,21 +252,20 @@ class UserData():
         for id,description,ttype,amount,date in cur.fetchall():
             yield {'id':id, 'description':description, 'type':ttype, 'amount':amount, 'date':date}
 
-    def find_transaction(self, account_id, data):
+    def find_transaction(self, account_id, transaction_id, data):
 
-        description = data.get('description', '')
-        ttype = data.get('type', 'unknown')
-        amount = data.get('amount', 0.0)
-        date = data.get('date', 'unknown')
+        # TODO If the bank does not provide such id, we could hash the transaction data
 
         cur = self.conn.cursor()
-        cur.execute("SELECT id FROM transactions WHERE fk_account=? AND description=? AND type=? AND amount=? AND date=?", 
-            (account_id,description,ttype,amount,date))
+        cur.execute("SELECT id FROM transactions WHERE fk_account=? AND bank_id=?", 
+            (account_id,transaction_id))
         row = cur.fetchone()
         if row:
             return row[0]
 
-    def add_transaction(self, account_id, data):
+    def add_transaction(self, account_id, transaction_id, data):
+        # transaction_id is the unique id from the bank
+        # TODO If the bank does not provide such id, we could hash the transaction data
 
         description = data.get('description', '')
         ttype = data.get('type', 'unknown')
@@ -274,11 +273,13 @@ class UserData():
         date = data.get('date', 'unknown')
         added = data.get('added', datetime.datetime.now())
 
+        # TODO Add any other information in the data field as json
+
         cur = self.conn.cursor()
         sql = ''' 
-            INSERT INTO transactions (description,type,amount,date,added,fk_account)
-              VALUES(?,?,?,?,?,?) '''
-        ret = cur.execute(sql, (description,ttype,amount,date,added,account_id))
+            INSERT INTO transactions (bank_id,description,type,amount,date,added,fk_account)
+              VALUES(?,?,?,?,?,?,?) '''
+        ret = cur.execute(sql, (transaction_id,description,ttype,amount,date,added,account_id))
 
         self.conn.commit()
 

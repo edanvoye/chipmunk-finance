@@ -102,11 +102,11 @@ class ChipmunkEngine():
             account_id = self.data.create_account(provider_id, uid, data)
         return account_id
 
-    def _add_transaction(self, account_id, data):
-        transaction_id = self.data.find_transaction(account_id, data)
-        if not transaction_id:
-            return self.data.add_transaction(account_id, data)
-        return transaction_id
+    def _add_transaction(self, account_id, transaction_id, data):
+        transaction_db_id = self.data.find_transaction(account_id, transaction_id, data)
+        if not transaction_db_id:
+            return self.data.add_transaction(account_id, transaction_id, data)
+        return transaction_db_id
 
     def find_account(self, provider_id, uid):
         # Given a provider DB id, and an account uid, find account DB id
@@ -146,10 +146,10 @@ class ChipmunkEngine():
                         data[label] = value
                 def add_account(uid, data):
                     return self._add_account(id, uid, data)
-                def add_transaction(account_uid, data):
+                def add_transaction(account_uid, transaction_id, data):
                     account_id = self.find_account(id, account_uid)
                     if account_id:
-                        return self._add_transaction(account_id, data)
+                        return self._add_transaction(account_id, transaction_id, data)
                     
                 # Call plugin to update provider via web scraping
                 # TODO pass date of last update to help provider with transactions
