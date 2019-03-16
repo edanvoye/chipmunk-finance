@@ -79,6 +79,9 @@ class UserData():
             CREATE TABLE IF NOT EXISTS accounts (
                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                                         name TEXT NOT NULL,
+                                        bank_id TEXT NOT NULL,
+                                        description TEXT,
+                                        type TEXT,
                                         currency TEXT NOT NULL,
                                         balance REAL,
                                         last_update TIMESTAMP,
@@ -86,10 +89,6 @@ class UserData():
                                         FOREIGN KEY(fk_provider) REFERENCES providers(id)
                                     );
         '''
-        # TODO add bank_id, use it for uid
-        # TODO Add description
-        # TODO Add type
-        # TODO use name for display
         c.execute(sql)
         sql = '''
             CREATE TABLE IF NOT EXISTS transactions (
@@ -201,7 +200,7 @@ class UserData():
 
     def get_account_id(self, provider_id, uid):
         cur = self.conn.cursor()
-        cur.execute("SELECT id FROM accounts WHERE fk_provider=? AND name=?", (provider_id, uid))
+        cur.execute("SELECT id FROM accounts WHERE fk_provider=? AND bank_id=?", (provider_id, uid))
         row = cur.fetchone()
         if row:
             return row[0]
@@ -219,14 +218,17 @@ class UserData():
 
     def create_account(self, provider_id, uid, data):
 
+        name = data.get('name', uid)
+        description = data.get('description', '')
+        atype = data.get('type', '')
         currency = data.get('currency', '')
         balance = data.get('balance', 0.0)
 
         cur = self.conn.cursor()
         sql = ''' 
-            INSERT INTO accounts(name,last_update,fk_provider,currency,balance)
+            INSERT INTO accounts(bank_id,name,type,description,last_update,fk_provider,currency,balance)
               VALUES(?,?,?,?,?) '''
-        ret = cur.execute(sql, (uid,datetime.datetime.now(),provider_id, currency, balance))
+        ret = cur.execute(sql, (uid,name,atype,description,datetime.datetime.now(),provider_id, currency, balance))
 
         self.conn.commit()
 
@@ -240,9 +242,9 @@ class UserData():
 
     def iter_accounts(self, provider_id):
         cur = self.conn.cursor()
-        cur.execute("SELECT id,name,currency,(SELECT count(*) FROM transactions WHERE fk_account=a.id) FROM accounts as a WHERE fk_provider=?", (provider_id,))
-        for id,name,currency,nb_transactions in cur.fetchall():
-            yield {'id':id, 'name':name, 'currency':currency, 'transaction_count':nb_transactions}
+        cur.execute("SELECT id,bank_id,name,type,description,currency,(SELECT count(*) FROM transactions WHERE fk_account=a.id) FROM accounts as a WHERE fk_provider=?", (provider_id,))
+        for id,bank_id,name,atype,description,currency,nb_transactions in cur.fetchall():
+            yield {'id':id, 'bank_id':bank_id, 'name':name, 'type':atype, 'description':description, 'currency':currency, 'transaction_count':nb_transactions}
 
     def iter_transactions(self, account_id):
         cur = self.conn.cursor()
