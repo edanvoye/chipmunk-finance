@@ -2,3 +2,5 @@ env/
 userdata/
 __pycache__
 *.pyc
+chromedriver
+.DS_Store
