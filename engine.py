@@ -77,17 +77,17 @@ class ChipmunkEngine():
         with selenium_webdriver() as driver:
             provider = self.provider_classes[provider_name](driver)
 
-        temp_user_data = {}
+            temp_user_data = {}
 
-        def get_user_data(label, is_password=False):
-            # Look for previously entered data
-            return temp_user_data.get(label, user_query('[%s] %s' % (provider_name, label), is_password))
+            def get_user_data(label, is_password=False):
+                # Look for previously entered data
+                return temp_user_data.get(label, user_query('[%s] %s' % (provider_name, label), is_password))
 
-        def store_user_data(label, value):
-            # Store user data in temporary dict, will be saved to DB if the login is success
-            temp_user_data[label] = value
+            def store_user_data(label, value):
+                # Store user data in temporary dict, will be saved to DB if the login is success
+                temp_user_data[label] = value
 
-        provider.update(get_user_data, store_user_data)
+            provider.update(get_user_data, store_user_data)
 
         # Login is a success, store provider and user data in DB
         self.data.add_provider(provider_name, temp_user_data)
