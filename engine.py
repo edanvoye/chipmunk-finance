@@ -2,19 +2,19 @@
 import os
 from storage import UserData
 from selenium import webdriver
+from contextlib import contextmanager
 
-class selenium_webdriver():
+@contextmanager
+def selenium_webdriver():
     # Return webscraping webdriver (selenium)
-    def __enter__(self):
-        # Look for chromedriver in the same folder
-        this_script_path = os.path.dirname(os.path.realpath(__file__))
-        chromedriverpath = os.path.join(this_script_path, 'chromedriver')
-        if not os.path.exists(chromedriverpath):
-            raise Exception('Chromedriver not installed at ' + chromedriverpath)
-        self.driver = webdriver.Chrome(chromedriverpath)
-        return self
-    def __exit__(self, exception_type, exception_value, traceback):
-        self.driver.quit()
+    # Look for chromedriver in the same folder
+    this_script_path = os.path.dirname(os.path.realpath(__file__))
+    chromedriverpath = os.path.join(this_script_path, 'chromedriver')
+    if not os.path.exists(chromedriverpath):
+        raise Exception('Chromedriver not installed at ' + chromedriverpath)
+    driver = webdriver.Chrome(chromedriverpath)
+    yield driver
+    driver.quit()
 
 class Provider():
     def __init__(self):
@@ -74,8 +74,8 @@ class ChipmunkEngine():
         if not provider_name in self.provider_classes:
             raise Exception('Provider name does not exist')
 
-        with selenium_webdriver() as web:
-            provider = self.provider_classes[provider_name](web.driver)
+        with selenium_webdriver() as driver:
+            provider = self.provider_classes[provider_name](driver)
 
         temp_user_data = {}
 
@@ -128,7 +128,7 @@ class ChipmunkEngine():
         # List all registered providers from database
         providers = self.data.registered_provider_list()
 
-        with selenium_webdriver() as web:
+        with selenium_webdriver() as driver:
 
             # For each registered provider
             for id,name,data in providers:
@@ -137,7 +137,7 @@ class ChipmunkEngine():
                 # Instanciate provider
                 if not name in self.provider_classes:
                     raise Exception('Provider plugin does not exist: ' + name)
-                provider = self.provider_classes[name](web.driver)
+                provider = self.provider_classes[name](driver)
 
                 def get_user_data(label):
                     return data[label] if label in data else user_query(label)
