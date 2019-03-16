@@ -242,9 +242,9 @@ class UserData():
 
     def iter_accounts(self, provider_id):
         cur = self.conn.cursor()
-        cur.execute("SELECT id,bank_id,name,type,description,currency,(SELECT count(*) FROM transactions WHERE fk_account=a.id) FROM accounts as a WHERE fk_provider=?", (provider_id,))
-        for id,bank_id,name,atype,description,currency,nb_transactions in cur.fetchall():
-            yield {'id':id, 'bank_id':bank_id, 'name':name, 'type':atype, 'description':description, 'currency':currency, 'transaction_count':nb_transactions}
+        cur.execute("SELECT id,bank_id,name,type,description,currency,last_update,(SELECT count(*) FROM transactions WHERE fk_account=a.id) FROM accounts as a WHERE fk_provider=?", (provider_id,))
+        for id,bank_id,name,atype,description,currency,last_update,nb_transactions in cur.fetchall():
+            yield {'id':id, 'bank_id':bank_id, 'name':name, 'type':atype, 'description':description, 'currency':currency, 'transaction_count':nb_transactions, 'last_update':last_update}
 
     def iter_transactions(self, account_id):
         cur = self.conn.cursor()

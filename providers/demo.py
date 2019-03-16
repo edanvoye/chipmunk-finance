@@ -9,7 +9,7 @@ class DemoBankPlugin(ProviderPlugin):
     def __init__(self, webdriver):
         pass
 
-    def update(self, get_user_data, store_user_data, add_account=None, add_transaction=None):
+    def update(self, get_user_data, store_user_data, add_account=None, add_transaction=None, last_updates={}):
         # Demo Provider
 
         # Load main webpage, need username and password
@@ -40,8 +40,16 @@ class DemoBankPlugin(ProviderPlugin):
             add_account('1002', name='Checking',currency='USD',balance=123.45)
 
         if add_transaction:
-            # Ready to load transactions
-            add_transaction('1001', 345, date='2018-12-31', type='DEPOSIT', amount=3.45, description='EFT to savings')
+
+            for acc_id in ['1001', '1002']:
+
+                # we only need to look for transactions on or after this date
+                if acc_id in last_updates:
+                    print('DEBUG We only need to look for transactions on or after %s' % last_updates[acc_id])
+
+                # Ready to load transactions
+                print('DEBUG Found 1 transaction')
+                add_transaction(acc_id, 345, date='2018-12-31', type='DEPOSIT', amount=3.45, description='EFT to savings')
 
     class meta:
         name = 'demo'

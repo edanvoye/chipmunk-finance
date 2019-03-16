@@ -151,9 +151,11 @@ class ChipmunkEngine():
                     if account_id:
                         return self._add_transaction(account_id, transaction_id, **kwargs)
                     
+                # create dict of last update date for each known account
+                last_account_update = {account['bank_id']: account['last_update'] for account in self.data.iter_accounts(id)}
+
                 # Call plugin to update provider via web scraping
-                # TODO pass date of last update to help provider with transactions
-                provider.update(get_user_data, store_user_data, add_account, add_transaction)
+                provider.update(get_user_data, store_user_data, add_account, add_transaction, last_updates=last_account_update)
 
                 # Update provider in database
                 self.data.update_provider(id, data)
