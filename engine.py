@@ -13,8 +13,10 @@ def selenium_webdriver():
     if not os.path.exists(chromedriverpath):
         raise Exception('Chromedriver not installed at ' + chromedriverpath)
     driver = webdriver.Chrome(chromedriverpath)
-    yield driver
-    driver.quit()
+    try:
+        yield driver
+    finally:
+        driver.quit()
 
 class Provider():
     def __init__(self):
