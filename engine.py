@@ -152,6 +152,7 @@ class ChipmunkEngine():
                         return self._add_transaction(account_id, data)
                     
                 # Call plugin to update provider via web scraping
+                # TODO pass date of last update to help provider with transactions
                 provider.update(get_user_data, store_user_data, add_account, add_transaction)
 
                 # Update provider in database

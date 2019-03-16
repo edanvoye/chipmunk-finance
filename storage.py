@@ -86,6 +86,10 @@ class UserData():
                                         FOREIGN KEY(fk_provider) REFERENCES providers(id)
                                     );
         '''
+        # TODO add bank_id, use it for uid
+        # TODO Add description
+        # TODO Add type
+        # TODO use name for display
         c.execute(sql)
         sql = '''
             CREATE TABLE IF NOT EXISTS transactions (
@@ -99,6 +103,8 @@ class UserData():
                                         FOREIGN KEY(fk_account) REFERENCES accounts(id)
                                     );
         '''
+        # TODO add bank id and use for find existing
+        # TODO add field for extra data
         c.execute(sql)
 
     def create(self, username, password):
@@ -264,12 +270,13 @@ class UserData():
         ttype = data.get('type', 'unknown')
         amount = data.get('amount', 0.0)
         date = data.get('date', 'unknown')
+        added = data.get('added', datetime.datetime.now())
 
         cur = self.conn.cursor()
         sql = ''' 
             INSERT INTO transactions (description,type,amount,date,added,fk_account)
               VALUES(?,?,?,?,?,?) '''
-        ret = cur.execute(sql, (description,ttype,amount,date,datetime.datetime.now(),account_id))
+        ret = cur.execute(sql, (description,ttype,amount,date,added,account_id))
 
         self.conn.commit()
 
