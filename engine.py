@@ -81,7 +81,7 @@ class ChipmunkEngine():
 
         def get_user_data(label):
             # Look for previously entered data
-            return temp_user_data.get(label, user_query(label))
+            return temp_user_data.get(label, user_query('[%s] %s' % (provider_name, label)))
 
         def store_user_data(label, value):
             # Store user data in temporary dict, will be saved to DB if the login is success
@@ -92,20 +92,20 @@ class ChipmunkEngine():
         # Login is a success, store provider and user data in DB
         self.data.add_provider(provider_name, temp_user_data)
 
-    def _add_account(self, provider_id, uid, data):
+    def _add_account(self, provider_id, uid, **kwargs):
         account_id = self.find_account(provider_id, uid)
         if account_id:
             # Update last_update
-            self.data.update_account(account_id, data)
+            self.data.update_account(account_id, **kwargs)
         else:
             # Create Account
-            account_id = self.data.create_account(provider_id, uid, data)
+            account_id = self.data.create_account(provider_id, uid, **kwargs)
         return account_id
 
-    def _add_transaction(self, account_id, transaction_id, data):
-        transaction_db_id = self.data.find_transaction(account_id, transaction_id, data)
+    def _add_transaction(self, account_id, transaction_id, **kwargs):
+        transaction_db_id = self.data.find_transaction(account_id, transaction_id, **kwargs)
         if not transaction_db_id:
-            return self.data.add_transaction(account_id, transaction_id, data)
+            return self.data.add_transaction(account_id, transaction_id, **kwargs)
         return transaction_db_id
 
     def find_account(self, provider_id, uid):
@@ -140,16 +140,16 @@ class ChipmunkEngine():
                 provider = self.provider_classes[name](driver)
 
                 def get_user_data(label):
-                    return data[label] if label in data else user_query(label)
+                    return data[label] if label in data else user_query('[%s] %s' % (name, label))
                 def store_user_data(label, value):
                     if data.get(label) != value:
                         data[label] = value
-                def add_account(uid, data):
-                    return self._add_account(id, uid, data)
-                def add_transaction(account_uid, transaction_id, data):
+                def add_account(uid, **kwargs):
+                    return self._add_account(id, uid, **kwargs)
+                def add_transaction(account_uid, transaction_id, **kwargs):
                     account_id = self.find_account(id, account_uid)
                     if account_id:
-                        return self._add_transaction(account_id, transaction_id, data)
+                        return self._add_transaction(account_id, transaction_id, **kwargs)
                     
                 # Call plugin to update provider via web scraping
                 # TODO pass date of last update to help provider with transactions

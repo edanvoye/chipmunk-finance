@@ -205,7 +205,7 @@ class UserData():
         if row:
             return row[0]
 
-    def update_account(self, account_id, data):
+    def update_account(self, account_id, **kwargs):
 
         # TODO Update account data ?
 
@@ -216,13 +216,13 @@ class UserData():
 
         self.conn.commit()
 
-    def create_account(self, provider_id, uid, data):
+    def create_account(self, provider_id, uid, **kwargs):
 
-        name = data.get('name', uid)
-        description = data.get('description', '')
-        atype = data.get('type', '')
-        currency = data.get('currency', '')
-        balance = data.get('balance', 0.0)
+        name = kwargs.get('name', uid)
+        description = kwargs.get('description', '')
+        atype = kwargs.get('type', '')
+        currency = kwargs.get('currency', '')
+        balance = kwargs.get('balance', 0.0)
 
         cur = self.conn.cursor()
         sql = ''' 
@@ -252,7 +252,7 @@ class UserData():
         for id,description,ttype,amount,date in cur.fetchall():
             yield {'id':id, 'description':description, 'type':ttype, 'amount':amount, 'date':date}
 
-    def find_transaction(self, account_id, transaction_id, data):
+    def find_transaction(self, account_id, transaction_id, **kwargs):
 
         # TODO If the bank does not provide such id, we could hash the transaction data
 
@@ -263,15 +263,15 @@ class UserData():
         if row:
             return row[0]
 
-    def add_transaction(self, account_id, transaction_id, data):
+    def add_transaction(self, account_id, transaction_id, **kwargs):
         # transaction_id is the unique id from the bank
         # TODO If the bank does not provide such id, we could hash the transaction data
 
-        description = data.get('description', '')
-        ttype = data.get('type', 'unknown')
-        amount = data.get('amount', 0.0)
-        date = data.get('date', 'unknown')
-        added = data.get('added', datetime.datetime.now())
+        description = kwargs.get('description', '')
+        ttype = kwargs.get('type', 'unknown')
+        amount = kwargs.get('amount', 0.0)
+        date = kwargs.get('date', 'unknown')
+        added = kwargs.get('added', datetime.datetime.now())
 
         # TODO Add any other information in the data field as json
 
