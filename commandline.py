@@ -12,12 +12,15 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--add", action="store_true", help="Add provider")
     parser.add_argument("-u", "--update", action="store_true", help="Update all accounts")
     parser.add_argument("-t", "--transactions", action="store_true", help="Show transactions")
+    parser.add_argument('--user', nargs=1)
 
     args = parser.parse_args()
 
     ## Login
 
-    username = input("Username: ")
+    username = args.user[0] if args.user else input("Username: ")
+    if not username:
+        exit(1)
     password = getpass.getpass()
 
     cm = ChipmunkEngine()
