@@ -6,6 +6,9 @@ class DemoBankPlugin(ProviderPlugin):
     # This is a dummy plugin for testing. Instead of scraping the webpage, the values
     # are hardcoded.
 
+    def __init__(self, webdriver):
+        pass
+
     def update(self, get_user_data, store_user_data, add_account=None, add_transaction=None):
         # Demo Provider
 

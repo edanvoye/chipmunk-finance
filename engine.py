@@ -1,5 +1,20 @@
 
+import os
 from storage import UserData
+from selenium import webdriver
+
+class selenium_webdriver():
+    # Return webscraping webdriver (selenium)
+    def __enter__(self):
+        # Look for chromedriver in the same folder
+        this_script_path = os.path.dirname(os.path.realpath(__file__))
+        chromedriverpath = os.path.join(this_script_path, 'chromedriver')
+        if not os.path.exists(chromedriverpath):
+            raise Exception('Chromedriver not installed at ' + chromedriverpath)
+        self.driver = webdriver.Chrome(chromedriverpath)
+        return self
+    def __exit__(self, exception_type, exception_value, traceback):
+        self.driver.quit()
 
 class Provider():
     def __init__(self):
@@ -54,11 +69,13 @@ class ChipmunkEngine():
         return self.provider_classes.keys()
 
     def add_provider(self, provider_name, user_query):
-        
+
         # Instanciate provider
         if not provider_name in self.provider_classes:
             raise Exception('Provider name does not exist')
-        provider = self.provider_classes[provider_name]()
+
+        with selenium_webdriver() as web:
+            provider = self.provider_classes[provider_name](web.driver)
 
         temp_user_data = {}
 
@@ -111,29 +128,31 @@ class ChipmunkEngine():
         # List all registered providers from database
         providers = self.data.registered_provider_list()
 
-        # For each registered provider
-        for id,name,data in providers:
-            progress_cb('Updating Provider #%d: %s' % (id,name))
+        with selenium_webdriver() as web:
 
-            # Instanciate provider
-            if not name in self.provider_classes:
-                raise Exception('Provider plugin does not exist: ' + name)
-            provider = self.provider_classes[name]()
+            # For each registered provider
+            for id,name,data in providers:
+                progress_cb('Updating Provider #%d: %s' % (id,name))
 
-            def get_user_data(label):
-                return data[label] if label in data else user_query(label)
-            def store_user_data(label, value):
-                if data.get(label) != value:
-                    data[label] = value
-            def add_account(uid, data):
-                return self._add_account(id, uid, data)
-            def add_transaction(account_uid, data):
-                account_id = self.find_account(id, account_uid)
-                if account_id:
-                    return self._add_transaction(account_id, data)
-                
-            # Call plugin to update provider via web scraping
-            provider.update(get_user_data, store_user_data, add_account, add_transaction)
+                # Instanciate provider
+                if not name in self.provider_classes:
+                    raise Exception('Provider plugin does not exist: ' + name)
+                provider = self.provider_classes[name](web.driver)
 
-            # Update provider in database
-            self.data.update_provider(id, data)
+                def get_user_data(label):
+                    return data[label] if label in data else user_query(label)
+                def store_user_data(label, value):
+                    if data.get(label) != value:
+                        data[label] = value
+                def add_account(uid, data):
+                    return self._add_account(id, uid, data)
+                def add_transaction(account_uid, data):
+                    account_id = self.find_account(id, account_uid)
+                    if account_id:
+                        return self._add_transaction(account_id, data)
+                    
+                # Call plugin to update provider via web scraping
+                provider.update(get_user_data, store_user_data, add_account, add_transaction)
+
+                # Update provider in database
+                self.data.update_provider(id, data)
