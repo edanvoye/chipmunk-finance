@@ -79,9 +79,9 @@ class ChipmunkEngine():
 
         temp_user_data = {}
 
-        def get_user_data(label):
+        def get_user_data(label, is_password=False):
             # Look for previously entered data
-            return temp_user_data.get(label, user_query('[%s] %s' % (provider_name, label)))
+            return temp_user_data.get(label, user_query('[%s] %s' % (provider_name, label), is_password))
 
         def store_user_data(label, value):
             # Store user data in temporary dict, will be saved to DB if the login is success
@@ -139,8 +139,8 @@ class ChipmunkEngine():
                     raise Exception('Provider plugin does not exist: ' + name)
                 provider = self.provider_classes[name](driver)
 
-                def get_user_data(label):
-                    return data[label] if label in data else user_query('[%s] %s' % (name, label))
+                def get_user_data(label, is_password=False):
+                    return data[label] if label in data else user_query('[%s] %s' % (name, label), is_password)
                 def store_user_data(label, value):
                     if data.get(label) != value:
                         data[label] = value

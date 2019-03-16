@@ -14,7 +14,7 @@ class DemoBankPlugin(ProviderPlugin):
 
         # Load main webpage, need username and password
         username = get_user_data('Username')
-        password = get_user_data('Password')
+        password = get_user_data('Password', is_password=True)
 
         # If we get 403 from the form
         if password != '1234':

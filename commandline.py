@@ -58,7 +58,9 @@ if __name__ == "__main__":
             provider_name = provider_name_list[int(index)]
             print('Adding provider ' + provider_name)
 
-            def user_query(label):
+            def user_query(label, is_password=False):
+                if is_password:
+                    return getpass.getpass(label + ': ')
                 return input(label + ': ')
 
             cm.add_provider(provider_name, user_query)
@@ -69,7 +71,9 @@ if __name__ == "__main__":
         def progress_cb(message):
             print(message)
 
-        def user_query(label):
+        def user_query(label, is_password=False):
+            if is_password:
+                return getpass.getpass(label + ': ')
             return input(label + ': ')
 
         cm.update_providers(progress_cb, user_query)
