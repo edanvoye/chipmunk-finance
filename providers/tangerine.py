@@ -111,12 +111,13 @@ class TangerinePlugin(ProviderPlugin):
 
                             # Add transaction to database
                             try:
-                                add_transaction(acc_id, transaction['id'], 
-                                    date=transaction['transaction_date'], 
-                                    added=datetime.datetime.now(),
-                                    type=transaction['type'], 
-                                    amount=transaction['amount'], 
-                                    description=transaction['description'])
+                                if 'transaction_date' in transaction:
+                                    add_transaction(acc_id, transaction['id'], 
+                                        date=transaction['transaction_date'], 
+                                        added=datetime.datetime.now(),
+                                        type=transaction['type'], 
+                                        amount=transaction['amount'], 
+                                        description=transaction['description'])
                             except:
                                 print('Error with transaction: %s' % transaction)
                                 traceback.print_exc()
