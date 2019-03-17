@@ -104,6 +104,8 @@ class UserData():
                                         FOREIGN KEY(fk_account) REFERENCES accounts(id)
                                     );
         '''
+        # TODO Add to transactions: balance_after (the account balance after this transaction)
+        # Some banks may report it with the transaction, otherwise we can calculate it after each update.
         c.execute(sql)
 
     def create(self, username, password):
