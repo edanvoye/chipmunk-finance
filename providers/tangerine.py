@@ -3,6 +3,7 @@ from providers.base import ProviderPlugin
 import time
 import json
 import datetime
+import traceback
 
 class TangerinePlugin(ProviderPlugin):
 
@@ -66,7 +67,7 @@ class TangerinePlugin(ProviderPlugin):
 
                     # Download transactions
                     if acc_id in last_updates:
-                        from_date = datetime.datetime.strptime(last_updates[acc_id], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(days=1)
+                        from_date = datetime.datetime.strptime(last_updates[acc_id], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(days=7)
                     else:
                         from_date = datetime.datetime.now() - timedelta(years=1)
                     to_date = datetime.datetime.now() + datetime.timedelta(days=1)
@@ -85,7 +86,7 @@ class TangerinePlugin(ProviderPlugin):
                         transactions = transactions_data.get('transactions', [])
                         for transaction in transactions:
 
-                            print('DEBUG transaction bank_id=%s desc=%s' % (transaction.get('id'),transaction.get('description')))
+                            #print('DEBUG transaction bank_id=%s desc=%s' % (transaction.get('id'),transaction.get('description')))
 
                             # Example:
                             # {"transaction_date":"2019-03-13T17:50:35",
@@ -118,6 +119,7 @@ class TangerinePlugin(ProviderPlugin):
                                     description=transaction['description'])
                             except:
                                 print('Error with transaction: %s' % transaction)
+                                traceback.print_exc()
 
                         # Follow link if there are more transactions for this date range
                         if transactions:
