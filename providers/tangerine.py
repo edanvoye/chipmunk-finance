@@ -52,8 +52,10 @@ class TangerinePlugin(ProviderPlugin):
 
             for account in account_data:
 
+                acc_id = account['number']
+
                 # Add account to database
-                add_account(account['number'], 
+                add_account(acc_id, 
                     name=account.get('nickname', account['description']), 
                     description=account['description'], 
                     type=account['type'], 
@@ -63,10 +65,13 @@ class TangerinePlugin(ProviderPlugin):
                 if add_transaction:
 
                     # Download transactions
-                    from_date = '2019-02-14T00:00:00.000' # TODO Dates for transactions
-                    to_date = '2019-03-16T03:59:59.999'
+                    if acc_id in last_updates:
+                        from_date = datetime.datetime.strptime(last_updates[acc_id], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(days=1)
+                    else:
+                        from_date = datetime.datetime.now() - timedelta(years=1)
+                    to_date = datetime.datetime.now()
 
-                    url = 'https://secure.tangerine.ca/web/rest/pfm/v1/transactions?accountIdentifiers=%s&periodFrom=%s&periodTo=%s&skip=0' % (account['number'], from_date, to_date)
+                    url = 'https://secure.tangerine.ca/web/rest/pfm/v1/transactions?accountIdentifiers=%s&periodFrom=%s&periodTo=%s&skip=0' % (acc_id, from_date.isoformat()[:-3], to_date.isoformat()[:-3])
 
                     while url:
 
@@ -105,7 +110,7 @@ class TangerinePlugin(ProviderPlugin):
 
                             # Add transaction to database
                             try:
-                                add_transaction(account['number'], transaction['id'], 
+                                add_transaction(acc_id, transaction['id'], 
                                     date=transaction['transaction_date'], 
                                     added=datetime.datetime.now(),
                                     type=transaction['type'], 
