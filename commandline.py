@@ -83,7 +83,7 @@ if __name__ == "__main__":
         print('Display %d Last Transactions for each account for user %s' % (nb_transactions, cm.username))
         for provider in cm.iter_providers():
             for account in cm.iter_accounts(provider['id']):
-                print('Provider:%s Account:%s (%s)' % (provider['name'], account['name'], account['description']))
+                print('Provider:%s Account:%s (%s) [Balance:%.2f]' % (provider['name'], account['name'], account['description'], account['balance']))
                 for transaction in cm.iter_transactions(account['id'], nb_transactions):
                     print(' %s [%s] %.2f %s (%s)' % (
                             transaction['type'],
