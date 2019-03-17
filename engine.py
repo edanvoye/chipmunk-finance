@@ -108,7 +108,7 @@ class ChipmunkEngine():
         transaction_db_id = self.data.find_transaction(account_id, transaction_id, **kwargs)
         if not transaction_db_id:
             return self.data.add_transaction(account_id, transaction_id, **kwargs)
-        return transaction_db_id
+        return None
 
     def find_account(self, provider_id, uid):
         # Given a provider DB id, and an account uid, find account DB id
@@ -134,6 +134,9 @@ class ChipmunkEngine():
 
             # For each registered provider
             for id,name,data in providers:
+
+                added_transactions = 0
+
                 progress_cb('Updating Provider #%d: %s' % (id,name))
 
                 # Instanciate provider
@@ -151,7 +154,9 @@ class ChipmunkEngine():
                 def add_transaction(account_uid, transaction_id, **kwargs):
                     account_id = self.find_account(id, account_uid)
                     if account_id:
-                        return self._add_transaction(account_id, transaction_id, **kwargs)
+                        if self._add_transaction(account_id, transaction_id, **kwargs):
+                            nonlocal added_transactions
+                            added_transactions = added_transactions + 1
                     
                 # create dict of last update date for each known account
                 last_account_update = {account['bank_id']: account['last_update'] for account in self.data.iter_accounts(id)}
@@ -161,3 +166,5 @@ class ChipmunkEngine():
 
                 # Update provider in database
                 self.data.update_provider(id, data)
+
+                print('Added %d transactions from %s (#%d)' % (added_transactions,name,id))
