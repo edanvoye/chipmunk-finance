@@ -69,7 +69,7 @@ class TangerinePlugin(ProviderPlugin):
                         from_date = datetime.datetime.strptime(last_updates[acc_id], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(days=1)
                     else:
                         from_date = datetime.datetime.now() - timedelta(years=1)
-                    to_date = datetime.datetime.now()
+                    to_date = datetime.datetime.now() + datetime.timedelta(days=1)
 
                     url = 'https://secure.tangerine.ca/web/rest/pfm/v1/transactions?accountIdentifiers=%s&periodFrom=%s&periodTo=%s&skip=0' % (acc_id, from_date.isoformat()[:-3], to_date.isoformat()[:-3])
 
