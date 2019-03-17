@@ -246,9 +246,12 @@ class UserData():
         for id,bank_id,name,atype,description,currency,last_update,nb_transactions in cur.fetchall():
             yield {'id':id, 'bank_id':bank_id, 'name':name, 'type':atype, 'description':description, 'currency':currency, 'transaction_count':nb_transactions, 'last_update':last_update}
 
-    def iter_transactions(self, account_id):
+    def iter_transactions(self, account_id, limit=None):
         cur = self.conn.cursor()
-        cur.execute("SELECT id,description,type,amount,date FROM transactions as a WHERE fk_account=? ORDER BY date,id", (account_id,))
+        sql = "SELECT id,description,type,amount,date FROM transactions as a WHERE fk_account=? ORDER BY date,id"
+        if limit:
+            sql = sql + ' LIMIT %d' % limit
+        cur.execute(sql, (account_id,))
         for id,description,ttype,amount,date in cur.fetchall():
             yield {'id':id, 'description':description, 'type':ttype, 'amount':amount, 'date':date}
 

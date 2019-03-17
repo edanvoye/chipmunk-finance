@@ -120,8 +120,8 @@ class ChipmunkEngine():
     def iter_accounts(self, provider_id):
         return self.data.iter_accounts(provider_id)
 
-    def iter_transactions(self, account_id):
-        return self.data.iter_transactions(account_id)
+    def iter_transactions(self, account_id, limit=None):
+        return self.data.iter_transactions(account_id, limit)
 
     def update_providers(self, progress_cb, user_query):
 
