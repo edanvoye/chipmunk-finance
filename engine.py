@@ -62,7 +62,7 @@ class ChipmunkEngine():
 
         # TODO Make this dynamic, look for every class inheriting from ProviderPlugin
         import providers
-        plugins = [providers.DemoBankPlugin, providers.QuestradePlugin, providers.TangerinePlugin]
+        plugins = [providers.DemoBankPlugin, providers.TangerinePlugin]
 
         for plugin in plugins:
             self.provider_classes[plugin.meta.name] = plugin
