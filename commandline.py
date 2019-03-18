@@ -92,3 +92,4 @@ if __name__ == "__main__":
                             account['currency'],
                             transaction['date'],
                     ))
+# TODO Display * before transaction if it was added today...?
