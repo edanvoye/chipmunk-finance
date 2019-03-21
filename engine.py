@@ -135,7 +135,7 @@ class ChipmunkEngine():
             # For each registered provider
             for id,name,data in providers:
 
-                added_transactions = 0
+                added_transactions = []
 
                 progress_cb('Updating Provider #%d: %s' % (id,name))
 
@@ -154,9 +154,10 @@ class ChipmunkEngine():
                 def add_transaction(account_uid, transaction_id, **kwargs):
                     account_id = self.find_account(id, account_uid)
                     if account_id:
-                        if self._add_transaction(account_id, transaction_id, **kwargs):
+                        db_tr_id = self._add_transaction(account_id, transaction_id, **kwargs)
+                        if db_tr_id:
                             nonlocal added_transactions
-                            added_transactions = added_transactions + 1
+                            added_transactions.append(db_tr_id)
                     
                 # create dict of last update date for each known account
                 last_account_update = {account['bank_id']: account['last_update'] for account in self.data.iter_accounts(id)}
@@ -167,4 +168,4 @@ class ChipmunkEngine():
                 # Update provider in database
                 self.data.update_provider(id, data)
 
-                print('Added %d transactions from %s (#%d)' % (added_transactions,name,id))
+                print('Added %d transactions from %s (#%d)' % (len(added_transactions),name,id))

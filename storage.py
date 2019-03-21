@@ -250,12 +250,12 @@ class UserData():
 
     def iter_transactions(self, account_id, limit=None):
         cur = self.conn.cursor()
-        sql = "SELECT id,description,type,amount,date FROM transactions as a WHERE fk_account=? ORDER BY date,id"
+        sql = "SELECT id,description,type,amount,date,added FROM transactions as a WHERE fk_account=? ORDER BY date,added,id DESC"
         if limit:
             sql = sql + ' LIMIT %d' % limit
         cur.execute(sql, (account_id,))
-        for id,description,ttype,amount,date in cur.fetchall():
-            yield {'id':id, 'description':description, 'type':ttype, 'amount':amount, 'date':date}
+        for id,description,ttype,amount,date,added in cur.fetchall():
+            yield {'id':id, 'description':description, 'type':ttype, 'amount':amount, 'date':date, 'added':added}
 
     def find_transaction(self, account_id, transaction_id, **kwargs):
 

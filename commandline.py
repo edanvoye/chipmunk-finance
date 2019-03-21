@@ -1,6 +1,7 @@
 
 import getpass
 import argparse
+import datetime
 
 from engine import ChipmunkEngine
 import providers 
@@ -11,7 +12,7 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--accounts", action="store_true", help="List accounts for user")
     parser.add_argument("-a", "--add", action="store_true", help="Add provider")
     parser.add_argument("-u", "--update", action="store_true", help="Update all accounts")
-    parser.add_argument("-t", "--transactions", action="store_true", help="Show transactions")
+    parser.add_argument("-t", "--transactions", nargs='?', const=10, default=None, help="Show transactions")
     parser.add_argument('--user', nargs=1)
 
     args = parser.parse_args()
@@ -79,17 +80,18 @@ if __name__ == "__main__":
         cm.update_providers(progress_cb, user_query)
 
     if args.transactions:
-        nb_transactions = 10
+        nb_transactions = int(args.transactions)
         print('Display %d Last Transactions for each account for user %s' % (nb_transactions, cm.username))
         for provider in cm.iter_providers():
             for account in cm.iter_accounts(provider['id']):
                 print('Provider:%s Account:%s (%s) [Balance:%.2f]' % (provider['name'], account['name'], account['description'], account['balance']))
                 for transaction in cm.iter_transactions(account['id'], nb_transactions):
-                    print(' %s [%s] %.2f %s (%s)' % (
-                            transaction['type'],
-                            transaction['description'],
-                            transaction['amount'],
-                            account['currency'],
-                            transaction['date'],
+                    added_today = str(datetime.datetime.now().date()) == transaction['added'][:10]
+                    print('%s (%s) %s [%s] %.2f %s' % (
+                        '*' if added_today else ' ',
+                        transaction['date'],
+                        transaction['type'],
+                        transaction['description'],
+                        transaction['amount'],
+                        account['currency'],
                     ))
-# TODO Display * before transaction if it was added today...?
