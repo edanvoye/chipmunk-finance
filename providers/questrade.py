@@ -6,6 +6,13 @@ import json
 import traceback
 import datetime
 
+def split_date_range(from_date, to_date, step = datetime.timedelta(days=7)):
+
+    it = from_date
+    while it < to_date:
+        yield it,it+step
+        it += step
+
 class QuestradePlugin(ProviderPlugin):
 
     def __init__(self, webdriver):
@@ -83,40 +90,40 @@ class QuestradePlugin(ProviderPlugin):
             from_date = datetime.datetime.now() - datetime.timedelta(days=365*3)
         to_date = datetime.datetime.now()
 
-        # TODO To get more than 30 days, split and iterate
+        for start,end in split_date_range(from_date, to_date, datetime.timedelta(days=30)):
 
-        response = self.auth_request_get('accounts/%s/activities?startTime=%s&endTime=%s' % 
-            (acc_id, format_datetime(from_date), format_datetime(to_date)))
-        tx_data = response.json()
+            response = self.auth_request_get('accounts/%s/activities?startTime=%s&endTime=%s' % 
+                (acc_id, format_datetime(start), format_datetime(end)))
+            tx_data = response.json()
 
-        for transaction in tx_data.get('activities'):
+            for transaction in tx_data.get('activities'):
 
-            def _sha1hash(s):
-                import hashlib
-                return hashlib.sha1(s.encode('utf-8')).hexdigest()
+                def _sha1hash(s):
+                    import hashlib
+                    return hashlib.sha1(s.encode('utf-8')).hexdigest()
 
-            tx_id = _sha1hash(str(transaction))
+                tx_id = _sha1hash(str(transaction))
 
-            # Add transaction to database
-            try:
-                add_transaction(acc_id, tx_id, 
-                    date=transaction['transactionDate'], 
-                    added=datetime.datetime.now(),
-                    type=transaction['type'] + '/' + transaction['action'], 
-                    amount=transaction['netAmount'], 
-                    description=transaction['symbol'],
-                    extra= {
-                        'details':transaction['description'],
-                        'currency':transaction['currency'],
-                        'price':transaction['price'],
-                        'quantity':transaction['quantity'],
-                        'commission':transaction['commission'],
-                        'settlementDate':transaction['settlementDate']
-                        }
-                    )
-            except:
-                print('Error with transaction: %s' % transaction)
-                traceback.print_exc()
+                # Add transaction to database
+                try:
+                    add_transaction(acc_id, tx_id, 
+                        date=transaction['transactionDate'], 
+                        added=datetime.datetime.now(),
+                        type=transaction['type'] + '/' + transaction['action'], 
+                        amount=transaction['netAmount'], 
+                        description=transaction['symbol'],
+                        extra= {
+                            'details':transaction['description'],
+                            'currency':transaction['currency'],
+                            'price':transaction['price'],
+                            'quantity':transaction['quantity'],
+                            'commission':transaction['commission'],
+                            'settlementDate':transaction['settlementDate']
+                            }
+                        )
+                except:
+                    print('Error with transaction: %s' % transaction)
+                    traceback.print_exc()
                 
     def get_access_token(self, refresh_token):
         url = 'https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token=%s' % refresh_token
