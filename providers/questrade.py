@@ -15,7 +15,7 @@ def split_date_range(from_date, to_date, step = datetime.timedelta(days=7)):
 
 class QuestradePlugin(ProviderPlugin):
 
-    def __init__(self, webdriver):
+    def __init__(self):
         pass
 
     def update(self, get_user_data, store_user_data, add_account=None, add_transaction=None, last_updates={}):

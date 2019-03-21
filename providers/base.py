@@ -1,6 +1,8 @@
 
 
-import sys, inspect
+import os, sys, inspect
+from selenium import webdriver
+from contextlib import contextmanager
 
 class ProviderPlugin():    
     def get_browser():
@@ -19,3 +21,17 @@ def get_provider_classes():
                         class_list.append(obj)
 
     return class_list
+
+@contextmanager
+def selenium_webdriver():
+    # Return webscraping webdriver (selenium)
+    # Look for chromedriver in the same folder
+    this_script_path = os.path.dirname(os.path.realpath(__file__))
+    chromedriverpath = os.path.join(this_script_path, '..', 'chromedriver')
+    if not os.path.exists(chromedriverpath):
+        raise Exception('Chromedriver not installed at ' + chromedriverpath)
+    driver = webdriver.Chrome(chromedriverpath)
+    try:
+        yield driver
+    finally:
+        driver.quit()    

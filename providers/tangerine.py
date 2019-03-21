@@ -1,5 +1,5 @@
 
-from providers.base import ProviderPlugin
+from providers.base import ProviderPlugin, selenium_webdriver
 import time
 import json
 import datetime
@@ -7,126 +7,128 @@ import traceback
 
 class TangerinePlugin(ProviderPlugin):
 
-    def __init__(self, webdriver):
-        self.webdriver = webdriver
+    def __init__(self):
+        pass
 
     def update(self, get_user_data, store_user_data, add_account=None, add_transaction=None, last_updates={}):
 
-        self.webdriver.get('https://www.tangerine.ca/app/#/?locale=en_US')
-        time.sleep(5) # TODO Wait for new page to appear
+        with selenium_webdriver() as webdriver:
 
-        clientId = self.webdriver.find_element_by_name('login_clientId')
-        user_account = get_user_data('Client Number, Card Number or Username')
-        clientId.send_keys( user_account )
-        time.sleep(2) # TODO Wait for AngularJS to validate
+            webdriver.get('https://www.tangerine.ca/app/#/?locale=en_US')
+            time.sleep(5) # TODO Wait for new page to appear
 
-        self.webdriver.find_element_by_id('login_logMeIn').click()
-        time.sleep(3) # TODO Wait for new page to appear
+            clientId = webdriver.find_element_by_name('login_clientId')
+            user_account = get_user_data('Client Number, Card Number or Username')
+            clientId.send_keys( user_account )
+            time.sleep(2) # TODO Wait for AngularJS to validate
 
-        secretQuestionText = self.webdriver.find_element_by_id('login_secretQuestion_label').text
-        secretQuestionAnswer = self.webdriver.find_element_by_id('login_secretQuestion')
-        user_secret = get_user_data(secretQuestionText)
-        secretQuestionAnswer.send_keys( user_secret )
-        time.sleep(2) # TODO Wait for AngularJS to validate
-        self.webdriver.find_element_by_id('login_Next').click()
-        time.sleep(3) # TODO Wait for new page to appear
+            webdriver.find_element_by_id('login_logMeIn').click()
+            time.sleep(3) # TODO Wait for new page to appear
 
-        pin = self.webdriver.find_element_by_id('login_pin')
-        user_pin = get_user_data('PIN', is_password=True)
-        pin.send_keys( user_pin )
-        time.sleep(2) # TODO Wait for AngularJS to validate
-        self.webdriver.find_element_by_id('login_signIn').click()
-        time.sleep(3) # TODO Wait for new page to appear
+            secretQuestionText = webdriver.find_element_by_id('login_secretQuestion_label').text
+            secretQuestionAnswer = webdriver.find_element_by_id('login_secretQuestion')
+            user_secret = get_user_data(secretQuestionText)
+            secretQuestionAnswer.send_keys( user_secret )
+            time.sleep(2) # TODO Wait for AngularJS to validate
+            webdriver.find_element_by_id('login_Next').click()
+            time.sleep(3) # TODO Wait for new page to appear
 
-        # If we get here, we can save the credentials
-        store_user_data('Client Number, Card Number or Username', user_account)
-        store_user_data(secretQuestionText, user_secret)
-        store_user_data('PIN', user_pin)
+            pin = webdriver.find_element_by_id('login_pin')
+            user_pin = get_user_data('PIN', is_password=True)
+            pin.send_keys( user_pin )
+            time.sleep(2) # TODO Wait for AngularJS to validate
+            webdriver.find_element_by_id('login_signIn').click()
+            time.sleep(3) # TODO Wait for new page to appear
 
-        if add_account:
+            # If we get here, we can save the credentials
+            store_user_data('Client Number, Card Number or Username', user_account)
+            store_user_data(secretQuestionText, user_secret)
+            store_user_data('PIN', user_pin)
 
-            # Download Account list
-            self.webdriver.get('https://secure.tangerine.ca/web/rest/pfm/v1/accounts')
-            time.sleep(2) # TODO Wait for new page to appear
-            json_accounts = self.webdriver.find_element_by_xpath("/html/body/pre").text
-            account_data = json.loads(json_accounts).get('accounts', [])
+            if add_account:
 
-            for account in account_data:
+                # Download Account list
+                webdriver.get('https://secure.tangerine.ca/web/rest/pfm/v1/accounts')
+                time.sleep(2) # TODO Wait for new page to appear
+                json_accounts = webdriver.find_element_by_xpath("/html/body/pre").text
+                account_data = json.loads(json_accounts).get('accounts', [])
 
-                acc_id = account['number']
+                for account in account_data:
 
-                # Add account to database
-                add_account(acc_id, 
-                    name=account.get('nickname', account['description']), 
-                    description=account['description'], 
-                    type=account['type'], 
-                    currency=account['currency_type'], 
-                    balance=account['account_balance'])
+                    acc_id = account['number']
 
-                if add_transaction:
+                    # Add account to database
+                    add_account(acc_id, 
+                        name=account.get('nickname', account['description']), 
+                        description=account['description'], 
+                        type=account['type'], 
+                        currency=account['currency_type'], 
+                        balance=account['account_balance'])
 
-                    # Download transactions
-                    if acc_id in last_updates:
-                        from_date = datetime.datetime.strptime(last_updates[acc_id], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(days=7)
-                    else:
-                        from_date = datetime.datetime.now() - datetime.timedelta(days=365*3)
-                    to_date = datetime.datetime.now()
+                    if add_transaction:
 
-                    skip = 0
+                        # Download transactions
+                        if acc_id in last_updates:
+                            from_date = datetime.datetime.strptime(last_updates[acc_id], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(days=7)
+                        else:
+                            from_date = datetime.datetime.now() - datetime.timedelta(days=365*3)
+                        to_date = datetime.datetime.now()
 
-                    while 1:
-    
-                        url = 'https://secure.tangerine.ca/web/rest/pfm/v1/transactions?accountIdentifiers=%s&periodFrom=%s&periodTo=%s&skip=%d' % (acc_id, from_date.isoformat()[:10], to_date.isoformat()[:10], skip)
+                        skip = 0
 
-                        self.webdriver.get(url)
-                        time.sleep(2) # TODO Wait for new page to appear
-                        url = None
+                        while 1:
+        
+                            url = 'https://secure.tangerine.ca/web/rest/pfm/v1/transactions?accountIdentifiers=%s&periodFrom=%s&periodTo=%s&skip=%d' % (acc_id, from_date.isoformat()[:10], to_date.isoformat()[:10], skip)
 
-                        json_transactions = self.webdriver.find_element_by_xpath("/html/body/pre").text
-                        transactions_data = json.loads(json_transactions)
+                            webdriver.get(url)
+                            time.sleep(2) # TODO Wait for new page to appear
+                            url = None
 
-                        transactions = transactions_data.get('transactions', [])
-                        if not transactions:
-                            break
-                        skip = skip + len(transactions)
+                            json_transactions = webdriver.find_element_by_xpath("/html/body/pre").text
+                            transactions_data = json.loads(json_transactions)
 
-                        for transaction in transactions:
+                            transactions = transactions_data.get('transactions', [])
+                            if not transactions:
+                                break
+                            skip = skip + len(transactions)
 
-                            #print('DEBUG transaction bank_id=%s desc=%s' % (transaction.get('id'),transaction.get('description')))
+                            for transaction in transactions:
 
-                            # Example:
-                            # {"transaction_date":"2019-03-13T17:50:35",
-                            #  "has_uncertain_categorization":false,
-                            #  "confirmation_number":"xxxxxxx",
-                            #  "amount":-5062.39,
-                            #  "comments":[],
-                            #  "balance_after":487.24,
-                            #  "is_split_child":null,
-                            #  "description":"Paiement - Carte de crédit Remises TNG",
-                            #  "type":"WITHDRAWAL",
-                            #  "is_uncleared":false,
-                            #  "detected_categories":[{"score":1,"categoryId":211}],
-                            #  "is_read":false,"account_id":"xxxxx",
-                            #  "originalAmount":-5062.39,
-                            #  "category_id":211,
-                            #  "id":xxxxx,
-                            #  "parent_transaction_id":"xxxxx-942a",
-                            #  "posted_date":"2019-03-13T00:00:00",
-                            #  "is_flagged":null,
-                            #  "status":"POSTED"}
+                                #print('DEBUG transaction bank_id=%s desc=%s' % (transaction.get('id'),transaction.get('description')))
 
-                            # Add transaction to database
-                            try:
-                                if 'transaction_date' in transaction:
-                                    add_transaction(acc_id, transaction['id'], 
-                                        date=transaction['transaction_date'], 
-                                        added=datetime.datetime.now(),
-                                        type=transaction['type'], 
-                                        amount=transaction['amount'], 
-                                        description=transaction['description'])
-                            except:
-                                print('Error with transaction: %s' % transaction)
-                                traceback.print_exc()
+                                # Example:
+                                # {"transaction_date":"2019-03-13T17:50:35",
+                                #  "has_uncertain_categorization":false,
+                                #  "confirmation_number":"xxxxxxx",
+                                #  "amount":-5062.39,
+                                #  "comments":[],
+                                #  "balance_after":487.24,
+                                #  "is_split_child":null,
+                                #  "description":"Paiement - Carte de crédit Remises TNG",
+                                #  "type":"WITHDRAWAL",
+                                #  "is_uncleared":false,
+                                #  "detected_categories":[{"score":1,"categoryId":211}],
+                                #  "is_read":false,"account_id":"xxxxx",
+                                #  "originalAmount":-5062.39,
+                                #  "category_id":211,
+                                #  "id":xxxxx,
+                                #  "parent_transaction_id":"xxxxx-942a",
+                                #  "posted_date":"2019-03-13T00:00:00",
+                                #  "is_flagged":null,
+                                #  "status":"POSTED"}
+
+                                # Add transaction to database
+                                try:
+                                    if 'transaction_date' in transaction:
+                                        add_transaction(acc_id, transaction['id'], 
+                                            date=transaction['transaction_date'], 
+                                            added=datetime.datetime.now(),
+                                            type=transaction['type'], 
+                                            amount=transaction['amount'], 
+                                            description=transaction['description'])
+                                except:
+                                    print('Error with transaction: %s' % transaction)
+                                    traceback.print_exc()
 
         # Example data recieved
         # https://secure.tangerine.ca/web/rest/pfm/v1/accounts
