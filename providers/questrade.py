@@ -99,25 +99,21 @@ class QuestradePlugin(ProviderPlugin):
 
             # Add transaction to database
             try:
-                if transaction['type'] in ['Trades','Dividends','Deposits','Other']:
-                    add_transaction(acc_id, tx_id, 
-                        date=transaction['transactionDate'], 
-                        added=datetime.datetime.now(),
-                        type=transaction['type'] + '/' + transaction['action'], 
-                        amount=transaction['netAmount'], 
-                        description=transaction['symbol'],
-                        extra= {
-                            'details':transaction['description'],
-                            'currency':transaction['currency'],
-                            'price':transaction['price'],
-                            'quantity':transaction['quantity'],
-                            'commission':transaction['commission'],
-                            'settlementDate':transaction['settlementDate']
-                            }
-                        )
-                else:
-                    # TODO Unknown transaction type
-                    print(transaction)
+                add_transaction(acc_id, tx_id, 
+                    date=transaction['transactionDate'], 
+                    added=datetime.datetime.now(),
+                    type=transaction['type'] + '/' + transaction['action'], 
+                    amount=transaction['netAmount'], 
+                    description=transaction['symbol'],
+                    extra= {
+                        'details':transaction['description'],
+                        'currency':transaction['currency'],
+                        'price':transaction['price'],
+                        'quantity':transaction['quantity'],
+                        'commission':transaction['commission'],
+                        'settlementDate':transaction['settlementDate']
+                        }
+                    )
             except:
                 print('Error with transaction: %s' % transaction)
                 traceback.print_exc()
