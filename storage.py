@@ -250,7 +250,7 @@ class UserData():
 
     def iter_transactions(self, account_id, limit=None):
         cur = self.conn.cursor()
-        sql = "SELECT id,description,type,amount,date,added FROM transactions as a WHERE fk_account=? ORDER BY date,added,id DESC"
+        sql = "SELECT id,description,type,amount,date,added FROM transactions as a WHERE fk_account=? ORDER BY id,added,date DESC"
         if limit:
             sql = sql + ' LIMIT %d' % limit
         cur.execute(sql, (account_id,))
