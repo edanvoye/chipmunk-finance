@@ -104,7 +104,6 @@ class UserData():
                                         FOREIGN KEY(fk_account) REFERENCES accounts(id)
                                     );
         '''
-        # TODO Add to transactions: balance_after (the account balance after this transaction)
         # Some banks may report it with the transaction, otherwise we can calculate it after each update.
         c.execute(sql)
 
@@ -209,6 +208,8 @@ class UserData():
 
     def update_account(self, account_id, **kwargs):
 
+        # TODO Store historical account balance
+
         # TODO Update account data ?
 
         cur = self.conn.cursor()
@@ -259,8 +260,6 @@ class UserData():
 
     def find_transaction(self, account_id, transaction_id, **kwargs):
 
-        # TODO If the bank does not provide such id, we could hash the transaction data
-
         cur = self.conn.cursor()
         cur.execute("SELECT id FROM transactions WHERE fk_account=? AND bank_id=?", 
             (account_id,transaction_id))
@@ -270,7 +269,6 @@ class UserData():
 
     def add_transaction(self, account_id, transaction_id, **kwargs):
         # transaction_id is the unique id from the bank
-        # TODO If the bank does not provide such id, we could hash the transaction data
 
         description = kwargs.get('description', '')
         ttype = kwargs.get('type', 'unknown')
@@ -278,8 +276,6 @@ class UserData():
         date = kwargs.get('date', 'unknown')
         added = kwargs.get('added', datetime.datetime.now())
         data = json.dumps(kwargs.get('extra', {}))
-
-        # TODO Add any other information in the data field as json
 
         cur = self.conn.cursor()
         sql = ''' 
