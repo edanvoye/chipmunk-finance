@@ -69,12 +69,14 @@ class TangerinePlugin(ProviderPlugin):
                     if acc_id in last_updates:
                         from_date = datetime.datetime.strptime(last_updates[acc_id], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(days=7)
                     else:
-                        from_date = datetime.datetime.now() - timedelta(days=365)
-                    to_date = datetime.datetime.now() + datetime.timedelta(days=1)
+                        from_date = datetime.datetime.now() - datetime.timedelta(days=365*3)
+                    to_date = datetime.datetime.now()
 
-                    url = 'https://secure.tangerine.ca/web/rest/pfm/v1/transactions?accountIdentifiers=%s&periodFrom=%s&periodTo=%s&skip=0' % (acc_id, from_date.isoformat()[:-3], to_date.isoformat()[:-3])
+                    skip = 0
 
-                    while url:
+                    while 1:
+    
+                        url = 'https://secure.tangerine.ca/web/rest/pfm/v1/transactions?accountIdentifiers=%s&periodFrom=%s&periodTo=%s&skip=%d' % (acc_id, from_date.isoformat()[:10], to_date.isoformat()[:10], skip)
 
                         self.webdriver.get(url)
                         time.sleep(2) # TODO Wait for new page to appear
@@ -84,6 +86,10 @@ class TangerinePlugin(ProviderPlugin):
                         transactions_data = json.loads(json_transactions)
 
                         transactions = transactions_data.get('transactions', [])
+                        if not transactions:
+                            break
+                        skip = skip + len(transactions)
+
                         for transaction in transactions:
 
                             #print('DEBUG transaction bank_id=%s desc=%s' % (transaction.get('id'),transaction.get('description')))
@@ -121,14 +127,6 @@ class TangerinePlugin(ProviderPlugin):
                             except:
                                 print('Error with transaction: %s' % transaction)
                                 traceback.print_exc()
-
-                        # Follow link if there are more transactions for this date range
-                        if transactions:
-                            links = transactions_data.get('links')
-                            if links:
-                                for link in links:
-                                    if link.get('rel') == 'next':
-                                        url = 'https://secure.tangerine.ca/web/rest' + link.get('href')
 
         # Example data recieved
         # https://secure.tangerine.ca/web/rest/pfm/v1/accounts
