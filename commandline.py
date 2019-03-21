@@ -66,6 +66,8 @@ if __name__ == "__main__":
 
             cm.add_provider(provider_name, user_query)
 
+            print('Account Added')
+
     if args.update:
         print('Updating transactions for user %s' % cm.username)
 
