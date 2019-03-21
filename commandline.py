@@ -13,6 +13,7 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--add", action="store_true", help="Add provider")
     parser.add_argument("-u", "--update", action="store_true", help="Update all accounts")
     parser.add_argument("-t", "--transactions", nargs='?', const=10, default=None, help="Show transactions")
+    parser.add_argument("-b", "--balance", nargs='?', const=10, default=None, help="Show historical balance")
     parser.add_argument('--user', nargs=1)
 
     args = parser.parse_args()
@@ -95,5 +96,18 @@ if __name__ == "__main__":
                         transaction['type'],
                         transaction['description'],
                         transaction['amount'],
+                        account['currency'],
+                    ))
+
+    if args.balance:
+        nb_transactions = int(args.balance)
+        print('Display %d Last Balances for each account for user %s' % (nb_transactions, cm.username))
+        for provider in cm.iter_providers():
+            for account in cm.iter_accounts(provider['id']):
+                print('Provider:%s Account:%s (%s)' % (provider['name'], account['name'], account['description']))
+                for bal in cm.iter_historical_balance(account['id'], nb_transactions):
+                    print('%s %.2f %s' % (
+                        bal['date'],
+                        bal['balance'],
                         account['currency'],
                     ))

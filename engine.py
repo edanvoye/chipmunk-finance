@@ -123,6 +123,9 @@ class ChipmunkEngine():
     def iter_transactions(self, account_id, limit=None):
         return self.data.iter_transactions(account_id, limit)
 
+    def iter_historical_balance(self, account_id, limit=None):
+        return self.data.iter_historical_balance(account_id, limit)
+
     def update_providers(self, progress_cb, user_query):
 
         progress_cb('Updating All Providers')

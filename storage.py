@@ -66,6 +66,7 @@ class UserData():
                                     );
         '''
         c.execute(sql)
+
         sql = '''
             CREATE TABLE IF NOT EXISTS providers (
                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -75,6 +76,7 @@ class UserData():
                                     );
         '''
         c.execute(sql)
+
         sql = '''
             CREATE TABLE IF NOT EXISTS accounts (
                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -90,6 +92,7 @@ class UserData():
                                     );
         '''
         c.execute(sql)
+
         sql = '''
             CREATE TABLE IF NOT EXISTS transactions (
                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -106,6 +109,30 @@ class UserData():
         '''
         # Some banks may report it with the transaction, otherwise we can calculate it after each update.
         c.execute(sql)
+
+        sql = '''
+            CREATE TABLE IF NOT EXISTS historical_balance (
+                                        date TIMESTAMP NOT NULL,
+                                        balance REAL,
+                                        fk_account INTEGER NOT NULL,
+                                        PRIMARY KEY (date, fk_account),
+                                        FOREIGN KEY(fk_account) REFERENCES accounts(id)
+                                    );
+        '''
+        c.execute(sql)
+
+    def add_historical_balance(self, acct_id, date, balance):
+        cur = self.conn.cursor()
+        sql = ''' 
+            DELETE FROM historical_balance WHERE date=? AND fk_account=?
+        '''
+        ret = cur.execute(sql, (date,acct_id))
+        sql = ''' 
+            INSERT INTO historical_balance(date,balance,fk_account)
+              VALUES(?,?,?) '''
+        ret = cur.execute(sql, (date,balance,acct_id))
+
+        self.conn.commit()
 
     def create(self, username, password):
 
@@ -208,7 +235,9 @@ class UserData():
 
     def update_account(self, account_id, **kwargs):
 
-        # TODO Store historical account balance
+        # Store historical account balance
+        balance = kwargs.get('balance', 0.0)
+        self.add_historical_balance(account_id, datetime.date.today(), balance)
 
         # TODO Update account data ?
 
@@ -257,6 +286,15 @@ class UserData():
         cur.execute(sql, (account_id,))
         for id,description,ttype,amount,date,added in cur.fetchall():
             yield {'id':id, 'description':description, 'type':ttype, 'amount':amount, 'date':date, 'added':added}
+
+    def iter_historical_balance(self, account_id, limit=None):
+        cur = self.conn.cursor()
+        sql = "SELECT date,balance FROM historical_balance WHERE fk_account=? ORDER BY date DESC"
+        if limit:
+            sql = sql + ' LIMIT %d' % limit
+        cur.execute(sql, (account_id,))
+        for date,balance in cur.fetchall():
+            yield {'date':date, 'balance':balance}
 
     def find_transaction(self, account_id, transaction_id, **kwargs):
 
