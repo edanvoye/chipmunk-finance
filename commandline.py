@@ -89,7 +89,7 @@ if __name__ == "__main__":
                     added_today = str(datetime.datetime.now().date()) == transaction['added'][:10]
                     print('%s (%s) %s [%s] %.2f %s' % (
                         '*' if added_today else ' ',
-                        transaction['date'],
+                        transaction['date'][:10],
                         transaction['type'],
                         transaction['description'],
                         transaction['amount'],
