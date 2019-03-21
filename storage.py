@@ -277,14 +277,15 @@ class UserData():
         amount = kwargs.get('amount', 0.0)
         date = kwargs.get('date', 'unknown')
         added = kwargs.get('added', datetime.datetime.now())
+        data = json.dumps(kwargs.get('extra', {}))
 
         # TODO Add any other information in the data field as json
 
         cur = self.conn.cursor()
         sql = ''' 
-            INSERT INTO transactions (bank_id,description,type,amount,date,added,fk_account)
-              VALUES(?,?,?,?,?,?,?) '''
-        ret = cur.execute(sql, (transaction_id,description,ttype,amount,date,added,account_id))
+            INSERT INTO transactions (bank_id,description,type,amount,date,added,fk_account,data)
+              VALUES(?,?,?,?,?,?,?,?) '''
+        ret = cur.execute(sql, (transaction_id,description,ttype,amount,date,added,account_id,data))
 
         self.conn.commit()
 
