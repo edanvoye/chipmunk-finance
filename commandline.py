@@ -4,7 +4,8 @@ import argparse
 import datetime
 
 from engine import ChipmunkEngine
-import providers 
+import providers
+import providers.base as pb
 
 if __name__ == "__main__":
 
@@ -14,9 +15,12 @@ if __name__ == "__main__":
     parser.add_argument("-u", "--update", action="store_true", help="Update all accounts")
     parser.add_argument("-t", "--transactions", nargs='?', const=10, default=None, help="Show transactions")
     parser.add_argument("-b", "--balance", nargs='?', const=10, default=None, help="Show historical balance")
+    parser.add_argument("--headless", action="store_true", help="Do not display browser window when scraping")
     parser.add_argument('--user', nargs=1)
 
     args = parser.parse_args()
+
+    pb.gobal_option_headless = args.headless
 
     ## Login
 

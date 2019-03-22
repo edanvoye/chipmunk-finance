@@ -4,6 +4,8 @@ import os, sys, inspect
 from selenium import webdriver
 from contextlib import contextmanager
 
+gobal_option_headless = False
+
 class ProviderPlugin():    
     def get_browser():
         pass # return selenium browser ready for scrape
@@ -30,7 +32,12 @@ def selenium_webdriver():
     chromedriverpath = os.path.join(this_script_path, '..', 'chromedriver')
     if not os.path.exists(chromedriverpath):
         raise Exception('Chromedriver not installed at ' + chromedriverpath)
-    driver = webdriver.Chrome(chromedriverpath)
+
+    chrome_options = webdriver.chrome.options.Options()
+    if gobal_option_headless:
+        chrome_options.add_argument("--headless")
+    driver = webdriver.Chrome(chromedriverpath, chrome_options=chrome_options)
+
     try:
         yield driver
     finally:
