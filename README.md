@@ -8,6 +8,14 @@ The software currently offers a very basic command-line interface, but a local w
 
 This project is just getting started, use at your own risk.
 
+## Supported banks
+
+Support for financial institutions can be improved by adding scripts in the providers folder.
+
+- Tangerine Bank (Canada)
+- Questrade (Canada)
+
+
 ## How to run
 
 Install Chrome Driver for Selenium : https://sites.google.com/a/chromium.org/chromedriver/downloads
