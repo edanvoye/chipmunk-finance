@@ -21,3 +21,10 @@ Create and activate Python 3.7 virtual environment, then install modules with:
 Run command line utility:
 
     python commandline.py
+
+    python commandline.py --user joe --add
+    python commandline.py --user joe --update --headless
+    python commandline.py --user joe --accounts
+    python commandline.py --user joe -t
+    python commandline.py --user joe -b
+    
