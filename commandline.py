@@ -94,8 +94,10 @@ if __name__ == "__main__":
                 print('Provider:%s Account:%s (%s) [Balance:%.2f]' % (provider['name'], account['name'], account['description'], account['balance']))
                 for transaction in cm.iter_transactions(account['id'], nb_transactions):
                     added_today = str(datetime.datetime.now().date()) == transaction['added'][:10]
-                    print('%s (%s) %s [%s] %.2f %s' % (
+                    uncleared = transaction.get('uncleared')
+                    print('%s%s (%s) %s [%s] %.2f %s' % (
                         '*' if added_today else ' ',
+                        'u' if uncleared else ' ',
                         transaction['date'][:10],
                         transaction['type'],
                         transaction['description'],

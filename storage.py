@@ -104,6 +104,7 @@ class UserData():
                                         added TIMESTAMP,
                                         data TEXT,
                                         fk_account INTEGER,
+                                        uncleared INTEGER DEFAULT 0,
                                         FOREIGN KEY(fk_account) REFERENCES accounts(id)
                                     );
         '''
@@ -280,12 +281,12 @@ class UserData():
 
     def iter_transactions(self, account_id, limit=None):
         cur = self.conn.cursor()
-        sql = "SELECT id,description,type,amount,date,added FROM transactions as a WHERE fk_account=? ORDER BY date DESC, added DESC, id DESC"
+        sql = "SELECT id,description,type,amount,date,added,uncleared FROM transactions as a WHERE fk_account=? ORDER BY date DESC, added DESC, id DESC"
         if limit:
             sql = sql + ' LIMIT %d' % limit
         cur.execute(sql, (account_id,))
-        for id,description,ttype,amount,date,added in cur.fetchall():
-            yield {'id':id, 'description':description, 'type':ttype, 'amount':amount, 'date':date, 'added':added}
+        for id,description,ttype,amount,date,added,uncleared in cur.fetchall():
+            yield {'id':id, 'description':description, 'type':ttype, 'amount':amount, 'date':date, 'added':added, 'uncleared':uncleared}
 
     def iter_historical_balance(self, account_id, limit=None):
         cur = self.conn.cursor()
@@ -314,13 +315,21 @@ class UserData():
         date = kwargs.get('date', 'unknown')
         added = kwargs.get('added', datetime.datetime.now())
         data = json.dumps(kwargs.get('extra', {}))
+        uncleared = 1 if kwargs.get('uncleared', False) else 0
 
         cur = self.conn.cursor()
         sql = ''' 
-            INSERT INTO transactions (bank_id,description,type,amount,date,added,fk_account,data)
-              VALUES(?,?,?,?,?,?,?,?) '''
-        ret = cur.execute(sql, (transaction_id,description,ttype,amount,date,added,account_id,data))
+            INSERT INTO transactions (bank_id,description,type,amount,date,added,uncleared,fk_account,data)
+              VALUES(?,?,?,?,?,?,?,?,?) '''
+        ret = cur.execute(sql, (transaction_id,description,ttype,amount,date,added,uncleared,account_id,data))
 
         self.conn.commit()
 
         return cur.lastrowid
+
+    def remove_transaction(self, account_id, transaction_db_id):
+        cur = self.conn.cursor()
+        sql = ''' 
+            DELETE FROM transactions WHERE fk_account=? AND id=? '''
+        ret = cur.execute(sql, (account_id, transaction_db_id))
+        self.conn.commit()

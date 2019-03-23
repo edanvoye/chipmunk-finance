@@ -125,7 +125,8 @@ class TangerinePlugin(ProviderPlugin):
                                             added=datetime.datetime.now(),
                                             type=transaction['type'], 
                                             amount=transaction['amount'], 
-                                            description=transaction['description'])
+                                            description=transaction['description'],
+                                            uncleared=transaction.get('is_uncleared'))
                                 except:
                                     print('Error with transaction: %s' % transaction)
                                     traceback.print_exc()
