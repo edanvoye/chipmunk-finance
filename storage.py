@@ -333,3 +333,17 @@ class UserData():
             DELETE FROM transactions WHERE fk_account=? AND id=? '''
         ret = cur.execute(sql, (account_id, transaction_db_id))
         self.conn.commit()
+
+    def remove_transactions(self, list_of_db_ids):
+        if list_of_db_ids:
+            cur = self.conn.cursor()
+            sql = 'DELETE FROM transactions WHERE id IN (%s)' % ','.join(['?'] * len(list_of_db_ids))
+            ret = cur.execute(sql, list_of_db_ids)
+            self.conn.commit()
+
+    def get_uncleared_transactions(self, account_id):
+        cur = self.conn.cursor()
+        sql = ''' 
+            SELECT id FROM transactions WHERE fk_account=? AND uncleared>0 '''
+        ret = cur.execute(sql, (account_id,))
+        return [x[0] for x in cur.fetchall()]
