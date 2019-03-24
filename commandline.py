@@ -53,6 +53,8 @@ if __name__ == "__main__":
                 print(' Account %s' % account['name'])
                 for key in account:
                     print('  %s: %s' % (key, account[key]))
+        for balance,currency in cm.data.get_accounts_total_balance():
+            print('Total Account Balance: %.2f %s' % (balance,currency))
         
     if args.add:
         print('Adding Provider for user %s' % cm.username)
@@ -91,7 +93,7 @@ if __name__ == "__main__":
         print('Display %d Last Transactions for each account for user %s' % (nb_transactions, cm.username))
         for provider in cm.iter_providers():
             for account in cm.iter_accounts(provider['id']):
-                print('Provider:%s Account:%s (%s) [Balance:%.2f]' % (provider['name'], account['name'], account['description'], account['balance']))
+                print('Provider:%s Account:%s (%s) [Balance:%.2f %s]' % (provider['name'], account['name'], account['description'], account['balance'], account['currency']))
                 for transaction in cm.iter_transactions(account['id'], nb_transactions):
                     added_today = str(datetime.datetime.now().date()) == transaction['added'][:10]
                     uncleared = transaction.get('uncleared')

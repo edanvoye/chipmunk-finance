@@ -347,3 +347,10 @@ class UserData():
             SELECT id FROM transactions WHERE fk_account=? AND uncleared>0 '''
         ret = cur.execute(sql, (account_id,))
         return [x[0] for x in cur.fetchall()]
+
+    def get_accounts_total_balance(self):
+        cur = self.conn.cursor()
+        sql = ''' 
+            SELECT SUM(balance),currency FROM accounts GROUP BY currency '''
+        ret = cur.execute(sql)
+        return cur.fetchall()
