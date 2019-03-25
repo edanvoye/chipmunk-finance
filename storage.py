@@ -65,6 +65,8 @@ class UserData():
                                         db_version INTEGER NOT NULL
                                     );
         '''
+        # TODO Add base currency for display
+        # TODO When adding a user, ask for base currency
         c.execute(sql)
 
         sql = '''
@@ -121,6 +123,9 @@ class UserData():
                                     );
         '''
         c.execute(sql)
+
+    def base_currency(self):
+        return 'CAD' # TODO from DB
 
     def add_historical_balance(self, acct_id, date, balance):
         cur = self.conn.cursor()
