@@ -24,10 +24,10 @@ class ChipmunkEngine():
         data = UserData()
         return data.exists(username)
 
-    def create(self, username, password):
+    def create(self, username, password, base_currency):
         self.data = None
         data = UserData()
-        data.create(username,password)
+        data.create(username,password,base_currency)
         self.data = data
         self.username = username
 

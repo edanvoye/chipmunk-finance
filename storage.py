@@ -62,11 +62,10 @@ class UserData():
                                         password_hash TEXT,
                                         salt1 TEXT,
                                         salt2 TEXT,
+                                        base_currency TEXT NOT NULL,
                                         db_version INTEGER NOT NULL
                                     );
         '''
-        # TODO Add base currency for display
-        # TODO When adding a user, ask for base currency
         c.execute(sql)
 
         sql = '''
@@ -125,7 +124,7 @@ class UserData():
         c.execute(sql)
 
     def base_currency(self):
-        return 'CAD' # TODO from DB
+        return self._base_currency
 
     def add_historical_balance(self, acct_id, date, balance):
         cur = self.conn.cursor()
@@ -140,7 +139,7 @@ class UserData():
 
         self.conn.commit()
 
-    def create(self, username, password):
+    def create(self, username, password,base_currency):
 
         self.conn = None
         self.cipher = None
@@ -167,10 +166,10 @@ class UserData():
 
         # Create one row in user table
         sql = ''' 
-            INSERT INTO users(username,password_hash,salt1,salt2,db_version)
-              VALUES(?,?,?,?,?) '''
+            INSERT INTO users(username,password_hash,salt1,salt2,db_version,base_currency)
+              VALUES(?,?,?,?,?,?) '''
         cur = conn.cursor()
-        ret = cur.execute(sql, (username,password_hash,salt1,salt2,self.DB_VERSION))
+        ret = cur.execute(sql, (username,password_hash,salt1,salt2,self.DB_VERSION,base_currency))
 
         conn.commit()
                 
@@ -190,7 +189,7 @@ class UserData():
 
         # Validate password with salt
         cur = conn.cursor()
-        cur.execute("SELECT salt1,salt2,password_hash FROM users WHERE username=?", (username,))
+        cur.execute("SELECT salt1,salt2,password_hash,base_currency FROM users WHERE username=?", (username,))
         row = cur.fetchone()
 
         if not row:
@@ -202,6 +201,7 @@ class UserData():
         if not row[2] == _sha1hash('%s%s' % (salt1,password)):
             raise Exception('Wrong password')
 
+        self._base_currency = row[3]
         self.conn = conn
         self.cipher = _cipher_from_password(password,bytes.fromhex(salt2))
 

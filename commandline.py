@@ -38,9 +38,10 @@ if __name__ == "__main__":
         if not password == getpass.getpass():
             print('Passwords do not match')
             exit(1)
+        bc = input("Base Currency (USD,CAD,EUR): ")
 
         # Create new user
-        cm.create(username, password)
+        cm.create(username, password, bc)
     else:
         cm.login(username, password)
 
