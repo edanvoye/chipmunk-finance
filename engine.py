@@ -1,6 +1,7 @@
 
 import os
 from storage import UserData
+from currency import currency_current_rate
 
 class Provider():
     def __init__(self):
@@ -169,3 +170,6 @@ class ChipmunkEngine():
             self.data.update_provider(id, data)
 
             print('Added %d transactions from %s (#%d)' % (len(added_transactions),name,id))
+
+    def to_base_currency(self, currency, amount):
+        return amount * currency_current_rate(currency, self.data.base_currency())

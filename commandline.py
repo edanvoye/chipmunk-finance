@@ -6,7 +6,6 @@ import datetime
 from engine import ChipmunkEngine
 import providers
 import providers.base as pb
-from currency import currency_current_rate
 
 if __name__ == "__main__":
 
@@ -58,7 +57,7 @@ if __name__ == "__main__":
         for balance,currency in cm.data.get_accounts_total_balance():
             print('Total Account Balance: %.2f %s' % (balance, currency))
 
-        total_combined = sum([balance*currency_current_rate(currency,cm.data.base_currency()) for balance,currency in cm.data.get_accounts_total_balance()])
+        total_combined = sum([cm.to_base_currency(currency,balance) for balance,currency in cm.data.get_accounts_total_balance()])
         print('Total Combined: %.2f %s' % (total_combined,cm.data.base_currency()))
         
     if args.add:
