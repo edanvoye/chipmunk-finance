@@ -3,6 +3,8 @@ certifi==2019.3.9
 cffi==1.12.1
 chardet==3.0.4
 cryptography==2.5
+Flask-RESTful==0.3.7
+Flask-HTTPAuth==3.2.4
 idna==2.8
 pycparser==2.19
 requests==2.21.0

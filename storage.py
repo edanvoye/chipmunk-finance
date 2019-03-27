@@ -139,7 +139,7 @@ class UserData():
 
         self.conn.commit()
 
-    def create(self, username, password,base_currency):
+    def create(self, username, password, base_currency):
 
         self.conn = None
         self.cipher = None
@@ -274,13 +274,17 @@ class UserData():
 
     def iter_providers(self):
         cur = self.conn.cursor()
-        cur.execute("SELECT id,name,last_login FROM providers")
+        cur.execute("SELECT id,name,last_login FROM providers ORDER BY name")
         for id,name,last_login in cur.fetchall():
             yield {'id':id, 'name':name, 'last_login':last_login}
 
-    def iter_accounts(self, provider_id):
+    def iter_accounts(self, provider_id=None):
         cur = self.conn.cursor()
-        cur.execute("SELECT id,bank_id,name,type,description,balance,currency,last_update,(SELECT count(*) FROM transactions WHERE fk_account=a.id) FROM accounts as a WHERE fk_provider=?", (provider_id,))
+        sql = 'SELECT id,bank_id,name,type,description,balance,currency,last_update,(SELECT count(*) FROM transactions WHERE fk_account=a.id) FROM accounts as a'
+        if provider_id:
+            cur.execute(sql + ' WHERE fk_provider=?', (provider_id,))
+        else:
+            cur.execute(sql)
         for id,bank_id,name,atype,description,balance,currency,last_update,nb_transactions in cur.fetchall():
             yield {'id':id, 'bank_id':bank_id, 'name':name, 'type':atype, 'balance':balance, 'description':description, 'currency':currency, 'transaction_count':nb_transactions, 'last_update':last_update}
 
