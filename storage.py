@@ -288,20 +288,20 @@ class UserData():
         for id,bank_id,name,atype,description,balance,currency,last_update,nb_transactions in cur.fetchall():
             yield {'id':id, 'bank_id':bank_id, 'name':name, 'type':atype, 'balance':balance, 'description':description, 'currency':currency, 'transaction_count':nb_transactions, 'last_update':last_update}
 
-    def iter_transactions(self, account_id, limit=None):
+    def iter_transactions(self, account_id, limit=None, offset=0):
         cur = self.conn.cursor()
         sql = "SELECT id,description,type,amount,date,added,uncleared FROM transactions as a WHERE fk_account=? ORDER BY date DESC, added DESC, id DESC"
         if limit:
-            sql = sql + ' LIMIT %d' % limit
+            sql = sql + ' LIMIT %d OFFSET %d' % (limit,offset)
         cur.execute(sql, (account_id,))
         for id,description,ttype,amount,date,added,uncleared in cur.fetchall():
             yield {'id':id, 'description':description, 'type':ttype, 'amount':amount, 'date':date, 'added':added, 'uncleared':uncleared}
 
-    def iter_historical_balance(self, account_id, limit=None):
+    def iter_historical_balance(self, account_id, limit=None, offset=0):
         cur = self.conn.cursor()
         sql = "SELECT date,balance FROM historical_balance WHERE fk_account=? ORDER BY date DESC"
         if limit:
-            sql = sql + ' LIMIT %d' % limit
+            sql = sql + ' LIMIT %d OFFSET %d' % (limit,offset)
         cur.execute(sql, (account_id,))
         for date,balance in cur.fetchall():
             yield {'date':date, 'balance':balance}
