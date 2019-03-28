@@ -13,17 +13,14 @@ api = Api(app)
 
 @auth.verify_password
 def verify_password(username, password):
-    print('verify_password ' + username)
     data = UserData()
     if not data.exists(username):
-        print('no exist')
         return False
     try:
         data.open(username, password)
         g.user = data
         return True
     except Exception as e:
-        print('except %s' % e)
         return False
 
 class AuthResource(Resource):
