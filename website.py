@@ -28,6 +28,12 @@ def verify_password(username, password):
 
 ## Graph URLS
 
+# TODO Refactor Graphs to get data from a REST call
+# TODO Refactor balance graph to accept a date range, add function in storage to get account balance over time (time series)
+# TODO Create graph with all accounts, and a dynamic dataset for sum of all accounts
+# TODO Add checkboxes to include or ignore accounts
+# TODO Add fields to change the date range
+
 @app.route("/account_balance/<account_id>")
 @auth.login_required
 def chart(account_id):
