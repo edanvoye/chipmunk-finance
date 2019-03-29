@@ -25,7 +25,7 @@ if __name__ == "__main__":
     pb.gobal_option_headless = args.headless
 
     if args.api:
-        from rest_api import run_rest_server
+        from website import run_rest_server
         run_rest_server(ChipmunkEngine(), args.debug)
         exit(0)
 

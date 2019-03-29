@@ -26,6 +26,8 @@ def verify_password(username, password):
     except Exception as e:
         return False
 
+## Graph URLS
+
 @app.route("/account_balance/<account_id>")
 @auth.login_required
 def chart(account_id):
@@ -37,6 +39,8 @@ def chart(account_id):
         account_description=description, 
         account_currency=currency, 
         data=data)
+
+## REST API
 
 class AuthResource(Resource):
     method_decorators = [auth.login_required]
@@ -58,6 +62,7 @@ class AccountList(AuthResource):
         return [a for a in g.user.iter_accounts()]
 api.add_resource(AccountList, '/api/accounts')
 
-# Runs the Flask Server for our REST API
+## Runs the Flask Server for our REST API
+
 def run_rest_server(cm, debug=False):
     app.run(debug=debug)
