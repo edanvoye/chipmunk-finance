@@ -363,3 +363,10 @@ class UserData():
             SELECT SUM(balance),currency FROM accounts GROUP BY currency '''
         ret = cur.execute(sql)
         return cur.fetchall()
+
+    def get_account_info(self, account_id):
+        cur = self.conn.cursor()
+        sql = ''' 
+            SELECT name,currency,balance,description FROM accounts WHERE id=? '''
+        ret = cur.execute(sql, (account_id,))
+        return cur.fetchone()

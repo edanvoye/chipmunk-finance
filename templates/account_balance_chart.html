@@ -1,0 +1,79 @@
+<head>
+   <meta charset="utf-8">
+   <title>Chipmunk Finance</title>      
+   <script src="/static/moment.min.js"></script>
+   <script src="/static/Chart.min.js"></script>
+</head>
+<body>
+
+<h1>Account Balance for {{account_name}} ({{account_description}})</h1>
+
+<!-- bar chart canvas element -->
+<canvas id="myChart" width="800" height="400"></canvas>
+<script language="javascript">
+   var ctx = document.getElementById('myChart').getContext('2d');
+   var chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+         datasets: [{
+               label: 'My First dataset',
+               backgroundColor: 'rgb(255, 99, 132)',
+               borderColor: 'rgb(255, 99, 132)',
+               data : [
+               {% for item in data %}
+                       {x:moment("{{item.date}}").valueOf(), y:{{item.balance}} } ,
+               {% endfor %}
+               ]
+         }]
+      },
+      options: {
+         legend: {
+            display: false
+         },
+         responsive: false,
+         title: {
+            display: true,
+            text: 'Account Balance Over Time'
+         },
+         scales: {
+            xAxes: [{
+               type: 'time',
+               display: true,
+               scaleLabel: {
+                  display: false,
+                  labelString: 'Date'
+               },
+               ticks: {
+                  major: {
+                     fontStyle: 'bold',
+                     fontColor: '#FF0000'
+                  }
+               },
+               time: {
+                  unit: 'day',
+                  unitStepSize: 1,
+                  displayFormats: {
+                    'day': 'MMM DD'
+                  }
+               }
+            }],
+            yAxes: [{
+               display: true,
+               scaleLabel: {
+                  display: false,
+                  labelString: 'Account Balance'
+               },
+               ticks: {
+                  // Include a dollar sign in the ticks
+                  callback: function(value, index, values) {
+                     return '{{account_currency}} ' + value.toFixed(2);
+                  }
+               }
+            }]
+         }
+      }
+   });
+
+</script>
+
+</body>
