@@ -1,6 +1,6 @@
 <head>
    <meta charset="utf-8">
-   <title>Chipmunk Finance</title>      
+   <title>Chipmunk Finance - Account Balance</title>      
    <script src="/static/moment.min.js"></script>
    <script src="/static/Chart.min.js"></script>
 </head>
@@ -53,7 +53,7 @@
                   unit: 'day',
                   unitStepSize: 1,
                   displayFormats: {
-                    'day': 'MMM DD'
+                    'day': 'YYYY MMM DD'
                   }
                }
             }],
@@ -64,6 +64,7 @@
                   labelString: 'Account Balance'
                },
                ticks: {
+                  beginAtZero: true,
                   // Include a dollar sign in the ticks
                   callback: function(value, index, values) {
                      return '{{account_currency}} ' + value.toFixed(2);
