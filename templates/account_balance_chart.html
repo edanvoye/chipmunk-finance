@@ -8,8 +8,10 @@
 
 <h1>Account Balance for {{account_name}} ({{account_description}})</h1>
 
-<!-- bar chart canvas element -->
-<canvas id="myChart" width="800" height="400"></canvas>
+<div style="width:100%;">
+   <canvas id="myChart"></canvas>
+</div>
+
 <script language="javascript">
    var ctx = document.getElementById('myChart').getContext('2d');
    var chart = new Chart(ctx, {
@@ -30,7 +32,7 @@
          legend: {
             display: false
          },
-         responsive: false,
+         responsive: true,
          title: {
             display: true,
             text: 'Account Balance Over Time'
