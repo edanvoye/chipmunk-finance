@@ -44,6 +44,12 @@ def chart(account_id):
         account_description=description, 
         account_currency=currency)
 
+@app.route("/accounts")
+@auth.login_required
+def accounts():
+    args = parser.parse_args()
+    return render_template('accounts.html')
+
 ## REST API
 
 class AuthResource(Resource):
@@ -70,6 +76,8 @@ api.add_resource(AccountBalanceHistory, '/api/history/<account_id>')
 
 class AccountList(AuthResource):
     def get(self):
+# TODO We also need balance in the base currency + base_currency
+# TODO Add accout type (sving, investment, debt)
         return [a for a in g.user.iter_accounts()]
 api.add_resource(AccountList, '/api/accounts')
 

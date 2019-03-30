@@ -1,0 +1,80 @@
+<head>
+    <meta charset="utf-8">
+    <title>Chipmunk Finance - Accounts</title>      
+    <script src="/static/moment.min.js"></script>
+    <script src="/static/Chart.min.js"></script>
+    <script src="/static/jquery-3.3.1.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/site.css" />
+</head>
+<body>
+     
+     <h2>Accounts</h2>
+     
+     <div style="width:100%;">
+        <canvas id="myChart"></canvas>
+     </div>
+     
+     <script language="javascript">
+
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF'.split('');
+            var color = '#';
+            for (var i = 0; i < 6; i++ ) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                  data : [],
+                  backgroundColor: [],
+               }]
+            },
+            options: {
+                responsive: true,
+                tooltips: {
+                  callbacks: {
+                    label: function(tooltipItem, data) {
+                        var label = data.labels[tooltipItem.index];
+                        var value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                        if (label) {
+                            label += ': ';
+                        }
+                        label += value.toFixed(2);
+                        return label;
+                    }
+                  }
+               }
+            }
+        });
+     
+        function load_account_data() {
+     
+          // Load account data
+          $.getJSON("/api/accounts", function( data ) {            
+            data.forEach((item) => {
+                if (item.balance > 0) {
+                    chart.data.labels.push(item.name);
+// TODO Need to use the balance in the base currency
+// TODO Need multiple graphs for each account type (saving, investment, debt)
+                    chart.data.datasets[0].data.push(item.balance);
+                    chart.data.datasets[0].backgroundColor.push(getRandomColor());
+                }        
+            });
+            chart.update();
+          });      
+           
+        }
+     
+        $( document ).ready(function() {
+           load_account_data();
+        });
+     
+     </script>
+     
+     </body>
