@@ -41,6 +41,7 @@ def chart(account_id):
     name,currency,balance,description = g.user.get_account_info(account_id)
     data = g.user.iter_historical_balance(account_id, args['count'])
     return render_template('account_balance_chart.html', 
+        account_id=account_id, 
         account_name=name, 
         account_description=description, 
         account_currency=currency, 
@@ -60,7 +61,14 @@ api.add_resource(AccountTransactions, '/api/transactions/<account_id>')
 class AccountBalanceHistory(AuthResource):
     def get(self, account_id):
         args = parser.parse_args()
-        return [b for b in g.user.iter_historical_balance(account_id, args['count'], args['offset'])]
+        name,currency,balance,description = g.user.get_account_info(account_id)
+        ret = {
+            'id':account_id,
+            'name':name,
+            'currency':currency,
+            'description':description,
+            'history':[b for b in g.user.iter_historical_balance(account_id, args['count'], args['offset'])]}
+        return ret
 api.add_resource(AccountBalanceHistory, '/api/history/<account_id>')
 
 class AccountList(AuthResource):

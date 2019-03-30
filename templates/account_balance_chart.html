@@ -3,6 +3,7 @@
    <title>Chipmunk Finance - Account Balance</title>      
    <script src="/static/moment.min.js"></script>
    <script src="/static/Chart.min.js"></script>
+   <script src="/static/jquery-3.3.1.min.js"></script>
    <link rel="stylesheet" type="text/css" href="/static/site.css" />
 </head>
 <body>
@@ -14,19 +15,16 @@
 </div>
 
 <script language="javascript">
+   var account_id = {{account_id}};
    var ctx = document.getElementById('myChart').getContext('2d');
    var chart = new Chart(ctx, {
       type: 'line',
       data: {
          datasets: [{
-               label: 'Balance',
-               backgroundColor: 'rgb(255, 99, 132)',
-               borderColor: 'rgb(255, 99, 132)',
-               data : [
-               {% for item in data %}
-                       {x:moment("{{item.date}}").valueOf(), y:{{item.balance}} } ,
-               {% endfor %}
-               ]
+            label: 'Balance',
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(255, 99, 132)',
+            data : []
          }]
       },
       options: {
@@ -76,6 +74,18 @@
             }]
          }
       }
+   });
+
+   $( document ).ready(function() {
+
+      // Load account balance history data
+      $.getJSON( "/api/history/2", function( data ) {
+         data.history.forEach((item) => {
+            chart.data.datasets[0].data.push({x:moment(item.date).valueOf(), y:item.balance});
+         });
+         chart.update();
+      });
+
    });
 
 </script>
