@@ -28,7 +28,6 @@ def verify_password(username, password):
 
 ## Graph URLS
 
-# TODO Refactor Graphs to get data from a REST call
 # TODO Refactor balance graph to accept a date range, add function in storage to get account balance over time (time series)
 # TODO Create graph with all accounts, and a dynamic dataset for sum of all accounts
 # TODO Add checkboxes to include or ignore accounts
@@ -39,13 +38,11 @@ def verify_password(username, password):
 def chart(account_id):
     args = parser.parse_args()
     name,currency,balance,description = g.user.get_account_info(account_id)
-    data = g.user.iter_historical_balance(account_id, args['count'])
     return render_template('account_balance_chart.html', 
         account_id=account_id, 
         account_name=name, 
         account_description=description, 
-        account_currency=currency, 
-        data=data)
+        account_currency=currency)
 
 ## REST API
 

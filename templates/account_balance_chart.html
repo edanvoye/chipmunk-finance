@@ -76,16 +76,20 @@
       }
    });
 
-   $( document ).ready(function() {
+   function load_chart_data(account_id) {
 
       // Load account balance history data
-      $.getJSON( "/api/history/2", function( data ) {
+      $.getJSON( "/api/history/" + account_id, function( data ) {
          data.history.forEach((item) => {
             chart.data.datasets[0].data.push({x:moment(item.date).valueOf(), y:item.balance});
          });
          chart.update();
-      });
+      });      
+      
+   }
 
+   $( document ).ready(function() {
+      load_chart_data(account_id);
    });
 
 </script>
