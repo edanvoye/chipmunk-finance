@@ -46,7 +46,7 @@
                 maintainAspectRatio : false,
                 responsive: true,
                 legend: {
-                    display: true,
+                    display: false,
                     position: 'bottom',
                     boxWidth: 20,
                     labels: {
@@ -74,8 +74,14 @@
         var chart_Investment = createChart( document.getElementById('canvasChart_Investment').getContext('2d') );
         var chart_Debt = createChart( document.getElementById('canvasChart_Debt').getContext('2d') );
      
-        function chartForType(index) {
-            return [chart_Savings,chart_Investment,chart_Debt][index%3];
+        function chartForType(type) {
+            if (type=='investment') {
+                return chart_Investment;
+            }
+            if (type=='debt') {
+                return chart_Debt;
+            }
+            return chart_Savings;
         }
 
         function load_account_data() {
@@ -83,7 +89,7 @@
           $.getJSON("/api/accounts", function( data ) {   
             var i = 0;         
             data.forEach((item) => {
-                var chart = chartForType(i); // TODO TEMPORARY, select from account type
+                var chart = chartForType(item.base_type); 
                 if (item.balance > 0) {
                     chart.data.datasets[0].backgroundColor.push(getColor(chart.data.labels.length));
                     chart.data.labels.push(item.name || item.description);

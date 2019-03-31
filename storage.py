@@ -85,6 +85,7 @@ class UserData():
                                         bank_id TEXT NOT NULL,
                                         description TEXT,
                                         type TEXT,
+                                        base_type TEXT NOT NULL DEFAULT 'savings',
                                         currency TEXT NOT NULL,
                                         balance REAL,
                                         last_update TIMESTAMP,
@@ -280,13 +281,13 @@ class UserData():
 
     def iter_accounts(self, provider_id=None):
         cur = self.conn.cursor()
-        sql = 'SELECT id,bank_id,name,type,description,balance,currency,last_update,(SELECT count(*) FROM transactions WHERE fk_account=a.id) FROM accounts as a'
+        sql = 'SELECT id,bank_id,name,type,base_type,description,balance,currency,last_update,(SELECT count(*) FROM transactions WHERE fk_account=a.id) FROM accounts as a'
         if provider_id:
             cur.execute(sql + ' WHERE fk_provider=?', (provider_id,))
         else:
             cur.execute(sql)
-        for id,bank_id,name,atype,description,balance,currency,last_update,nb_transactions in cur.fetchall():
-            yield {'id':id, 'bank_id':bank_id, 'name':name, 'type':atype, 'balance':balance, 'description':description, 'currency':currency, 'transaction_count':nb_transactions, 'last_update':last_update}
+        for id,bank_id,name,atype,base_type,description,balance,currency,last_update,nb_transactions in cur.fetchall():
+            yield {'id':id, 'bank_id':bank_id, 'name':name, 'type':atype, 'base_type':base_type, 'balance':balance, 'description':description, 'currency':currency, 'transaction_count':nb_transactions, 'last_update':last_update}
 
     def iter_transactions(self, account_id, limit=None, offset=0):
         cur = self.conn.cursor()
