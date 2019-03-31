@@ -77,7 +77,6 @@ api.add_resource(AccountBalanceHistory, '/api/history/<account_id>')
 class AccountList(AuthResource):
     def get(self):
 # TODO We also need balance in the base currency + base_currency
-# TODO Add accout type (sving, investment, debt)
         return [a for a in g.user.iter_accounts()]
 api.add_resource(AccountList, '/api/accounts')
 
