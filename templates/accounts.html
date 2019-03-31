@@ -10,33 +10,49 @@
      
      <h2>Accounts</h2>
      
-     <div style="width:100%;">
-        <canvas id="myChart"></canvas>
+     <div class="graph_container">
+        <div class="graph_item">
+            <div>Savings</div>
+            <canvas id="canvasChart_Savings"></canvas></div>
+        <div class="graph_item">
+            <div>Investments</div>
+            <canvas id="canvasChart_Investment"></canvas></div>
+        <div class="graph_item">
+            <div>Debt</div>
+            <canvas id="canvasChart_Debt"></canvas></div>        
      </div>
      
      <script language="javascript">
 
-        function getRandomColor() {
-            var letters = '0123456789ABCDEF'.split('');
-            var color = '#';
-            for (var i = 0; i < 6; i++ ) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
+        function getColor(index) {
+            var colors = ['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', 
+                '#42d4f4', '#f032e6', '#bfef45', '#fabebe', '#469990', '#e6beff', '#9A6324', 
+                '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9'];
+            return colors[index % colors.length];
         }
 
-        var ctx = document.getElementById('myChart').getContext('2d');
-        var chart = new Chart(ctx, {
+        function createChart(ctx) {
+            return new Chart(ctx, {
             type: 'doughnut',
             data: {
                 labels: [],
                 datasets: [{
                   data : [],
                   backgroundColor: [],
+                  borderColor: '#202020'
                }]
             },
             options: {
+                maintainAspectRatio : false,
                 responsive: true,
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    boxWidth: 20,
+                    labels: {
+                        fontColor: '#c0c0c0'
+                    }
+                },
                 tooltips: {
                   callbacks: {
                     label: function(tooltipItem, data) {
@@ -52,21 +68,34 @@
                }
             }
         });
+        }
+
+        var chart_Savings = createChart( document.getElementById('canvasChart_Savings').getContext('2d') );
+        var chart_Investment = createChart( document.getElementById('canvasChart_Investment').getContext('2d') );
+        var chart_Debt = createChart( document.getElementById('canvasChart_Debt').getContext('2d') );
      
+        function chartForType(index) {
+            return [chart_Savings,chart_Investment,chart_Debt][index%3];
+        }
+
         function load_account_data() {
-     
           // Load account data
-          $.getJSON("/api/accounts", function( data ) {            
+          $.getJSON("/api/accounts", function( data ) {   
+            var i = 0;         
             data.forEach((item) => {
+                var chart = chartForType(i); // TODO TEMPORARY, select from account type
                 if (item.balance > 0) {
-                    chart.data.labels.push(item.name);
-// TODO Need to use the balance in the base currency
-// TODO Need multiple graphs for each account type (saving, investment, debt)
+                    chart.data.datasets[0].backgroundColor.push(getColor(chart.data.labels.length));
+                    chart.data.labels.push(item.name || item.description);
                     chart.data.datasets[0].data.push(item.balance);
-                    chart.data.datasets[0].backgroundColor.push(getRandomColor());
-                }        
+// TODO Need to use the balance in the base currency
+// TODO Get account type from database
+                    i++;
+                }
             });
-            chart.update();
+            chart_Savings.update();
+            chart_Investment.update();
+            chart_Debt.update();
           });      
            
         }
