@@ -17,16 +17,16 @@ if __name__ == "__main__":
     parser.add_argument("-b", "--balance", nargs='?', const=10, default=None, help="Show historical balance")
     parser.add_argument("--headless", action="store_true", help="Do not display browser window when scraping")
     parser.add_argument('--user', nargs=1)
-    parser.add_argument("--api", action="store_true", help="Strt REST Server")
+    parser.add_argument("--www", action="store_true", help="Start GUI weberver")
     parser.add_argument("--debug", action="store_true")
 
     args = parser.parse_args()
 
     pb.gobal_option_headless = args.headless
 
-    if args.api:
-        from website import run_rest_server
-        run_rest_server(ChipmunkEngine(), args.debug)
+    if args.www:
+        import web_gui
+        web_gui.run_web_server(ChipmunkEngine(), args.debug)
         exit(0)
 
     ## Login
