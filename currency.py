@@ -1,6 +1,9 @@
 
 import requests
 
+# TODO cache
+# TODO fct to get all rates for base_currency
+
 def currency_current_rate(currency_from, currency_to):
     if currency_from == currency_to:
         return 1.0
