@@ -1,5 +1,5 @@
 
-from flask import render_template, g
+from flask import g
 
 from storage import UserData
 

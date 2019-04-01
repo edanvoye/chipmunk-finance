@@ -1,7 +1,6 @@
 
 from flask import render_template, g
 from flask_restful import reqparse, Resource, Api
-#from flask.json import jsonify
 
 from . import app, auth
 
