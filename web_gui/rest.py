@@ -1,14 +1,16 @@
 
-from flask import render_template, g
+from flask import render_template, g, Blueprint
 from flask_restful import reqparse, Resource, Api
 
-from . import app, auth
+from . import auth
+
+rest_api = Blueprint('rest_api', __name__)
 
 parser = reqparse.RequestParser()
 parser.add_argument('count', type=int, default=20)
 parser.add_argument('offset', type=int, default=0)
 
-api = Api(app)
+api = Api(rest_api)
 
 ## REST API
 
@@ -19,7 +21,7 @@ class AccountTransactions(AuthResource):
     def get(self, account_id):
         args = parser.parse_args()
         return [t for t in g.user.iter_transactions(account_id, args['count'], args['offset'])]
-api.add_resource(AccountTransactions, '/api/transactions/<account_id>')
+api.add_resource(AccountTransactions, '/transactions/<account_id>')
 
 class AccountBalanceHistory(AuthResource):
     def get(self, account_id):
@@ -32,10 +34,10 @@ class AccountBalanceHistory(AuthResource):
             'description':description,
             'history':[b for b in g.user.iter_historical_balance(account_id, args['count'], args['offset'])]}
         return ret
-api.add_resource(AccountBalanceHistory, '/api/history/<account_id>')
+api.add_resource(AccountBalanceHistory, '/history/<account_id>')
 
 class AccountList(AuthResource):
     def get(self):
 # TODO We also need balance in the base currency + base_currency
         return [a for a in g.user.iter_accounts()]
-api.add_resource(AccountList, '/api/accounts')
+api.add_resource(AccountList, '/accounts')

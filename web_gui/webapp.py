@@ -20,7 +20,9 @@ def verify_password(username, password):
 ## Load all views
 
 from .views import *
-from .rest import *
+from .rest import rest_api
+
+app.register_blueprint(rest_api, url_prefix='/api')
 
 ## Runs the Flask Server for our REST API
 
