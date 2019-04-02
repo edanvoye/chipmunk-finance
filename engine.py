@@ -173,3 +173,42 @@ class ChipmunkEngine():
 
     def to_base_currency(self, currency, amount):
         return amount * currency_current_rate(currency, self.data.base_currency())
+
+    def create_account_update_async_action(self):
+        action_id = self.data.action_create('account_update')
+
+        # Launch Worker Thread for this async action
+        from threading import Thread 
+        t = Thread(target=ChipmunkEngine.account_update_thread, args=(self,action_id))
+        t.start()
+        return action_id
+
+    def account_update_thread(self,action_id):
+        # Worker thread to process one async action
+
+        print(f'Run thread to process action {action_id}')
+
+        def progress_cb(message):
+            print(message)
+            self.data.action_update(action_id, status='working', progress=message)
+
+        def user_query(label, is_password=False):
+            status = 'user_password' if is_password else 'user_query'
+            self.data.action_update(action_id, status=status, user_query=label)
+            while status != 'user_response':
+                status,_,_,user_response = self.data.action_status(action_id)
+                # TODO Check timeout, and return None
+            self.data.action_update(action_id, status='working')
+            return user_response
+
+        self.update_providers(progress_cb, user_query)
+
+        # TODO Add a way for webpage to start an update by calling:
+        #    cm.create_account_update_async_action()
+
+        # TODO Implement async action in website:
+        # in parallel, the website will repeatedly call self.data.action_status(id)
+        # and display a prompt if status='user_query' or 'user_password'
+        # when the user fills the prompt we call :
+        #    self.data.action_update(id, status='user_response', user_response='blabla')
+        # Wait until we get the status='done'

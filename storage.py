@@ -124,6 +124,47 @@ class UserData():
         '''
         c.execute(sql)
 
+        sql = '''
+            CREATE TABLE IF NOT EXISTS actions (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        action TEXT NOT NULL,
+                        created TIMESTAMP NOT NULL,
+                        modified TIMESTAMP NOT NULL,
+                        progress TEXT,
+                        status TEXT,
+                        user_query TEXT,
+                        user_response TEXT
+                        );
+        '''
+        c.execute(sql)
+
+    # TODO Function to delete old actions rows
+
+    def action_create(self, action):
+        cur = self.conn.cursor()
+        sql = ''' 
+            INSERT INTO actions(action,created,modified,status)
+              VALUES(?,?,?,?) '''
+        ret = cur.execute(sql, (action, datetime.datetime.now(), datetime.datetime.now(), 'created'))
+        self.conn.commit()
+        return cur.lastrowid
+
+    def action_update(self, action_id, status, progress=None, user_query=None, user_response=None):
+        cur = self.conn.cursor()
+        if progress:
+            sql = 'UPDATE actions SET status=?,progress=?,user_query=?,user_response=?,modified=? WHERE id=?'
+            ret = cur.execute(sql, (status,progress,user_query,user_response,datetime.datetime.now(),action_id))
+        else:
+            sql = 'UPDATE actions SET status=?,user_query=?,user_response=?,modified=? WHERE id=?'
+            ret = cur.execute(sql, (status,user_query,user_response,datetime.datetime.now(),action_id))
+        self.conn.commit()
+
+    def action_status(self, action_id):
+        cur = self.conn.cursor()
+        cur.execute("SELECT status,progress,user_query,user_response FROM actions WHERE id=?", (action_id,))
+        row = cur.fetchone()
+        return row
+
     def base_currency(self):
         return self._base_currency
 
@@ -162,7 +203,7 @@ class UserData():
         password_hash = _sha1hash('%s%s' % (salt1,password))
 
         # Create database
-        conn = sqlite3.connect(db_file)
+        conn = sqlite3.connect(db_file, check_same_thread=False)
         self._update_tables(conn)
 
         # Create one row in user table
@@ -183,7 +224,7 @@ class UserData():
         self.cipher = None
 
         db_file = os.path.join('userdata', username + '.db')
-        conn = sqlite3.connect(db_file)
+        conn = sqlite3.connect(db_file, check_same_thread=False)
 
         # Update DB if the tables have changed
         self._update_tables(conn)
