@@ -25,6 +25,7 @@ if __name__ == "__main__":
     pb.gobal_option_headless = args.headless
 
     if args.www:
+        pb.gobal_option_headless = True
         import web_gui
         web_gui.run_web_server(ChipmunkEngine(), args.debug)
         exit(0)
