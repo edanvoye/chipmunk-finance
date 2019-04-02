@@ -189,7 +189,6 @@ class ChipmunkEngine():
         print(f'Run thread to process action {action_id}')
 
         def progress_cb(message):
-            print(message)
             self.data.action_update(action_id, status='working', progress=message)
 
         def user_query(label, is_password=False):
@@ -197,7 +196,7 @@ class ChipmunkEngine():
             self.data.action_update(action_id, status=status, user_query=label)
             while status != 'user_response':
                 status,_,_,user_response = self.data.action_status(action_id)
-                # TODO Check timeout, and return None
+                # TODO Check timeout, and return None if too long
             self.data.action_update(action_id, status='working')
             return user_response
 
@@ -212,3 +211,9 @@ class ChipmunkEngine():
         # when the user fills the prompt we call :
         #    self.data.action_update(id, status='user_response', user_response='blabla')
         # Wait until we get the status='done'
+
+        # TODO Need 3 REST endpoints:
+        # /api/async/create/account_update  # call cm.create_account_update_async_action()
+        # /api/async/status/<action_id>     # to read status, user_query, user_password 
+        # /api/async/update/<action_id>     # to send user_response
+    
