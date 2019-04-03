@@ -13,7 +13,7 @@
     <div>
         {% for account in accounts %}
             <div>
-                Account:{{account.name}} {{account.description}} {{account.balance}} {{account.currency}} 
+                Account:{{account.name}} {{account.description}} {{"%.2f" % account.balance}} {{account.currency}} 
                 <a href="/account_balance/{{account.id}}">history</a>
             </div>
         {% endfor %}
