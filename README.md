@@ -36,4 +36,8 @@ Run command line utility:
     python commandline.py --user joe --accounts
     python commandline.py --user joe -t
     python commandline.py --user joe -b
+
+Run local webserver at http://127.0.0.1:5000
+
+    python commandline.py --www
     
