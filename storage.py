@@ -174,10 +174,10 @@ class UserData():
 
     def add_historical_balance(self, acct_id, date, balance):
         cur = self.conn.cursor()
-        sql = ''' 
-            DELETE FROM historical_balance WHERE date=? AND fk_account=?
-        '''
-        ret = cur.execute(sql, (date,acct_id))
+        # sql = ''' 
+        #     DELETE FROM historical_balance WHERE date=? AND fk_account=?
+        # '''
+        # ret = cur.execute(sql, (date,acct_id))
         sql = ''' 
             INSERT INTO historical_balance(date,balance,fk_account)
               VALUES(?,?,?) '''
@@ -293,12 +293,11 @@ class UserData():
         balance = kwargs.get('balance', 0.0)
         self.add_historical_balance(account_id, datetime.datetime.now(), balance)
 
-        # TODO Update account data ?
-
+        # Update account data
         cur = self.conn.cursor()
         sql = ''' 
-            UPDATE accounts SET last_update=? WHERE id=? '''
-        ret = cur.execute(sql, (datetime.datetime.now(),account_id))
+            UPDATE accounts SET last_update=?,balance=? WHERE id=? '''
+        ret = cur.execute(sql, (datetime.datetime.now(),balance,account_id))
 
         self.conn.commit()
 
