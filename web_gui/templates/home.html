@@ -7,6 +7,17 @@
     <link rel="stylesheet" type="text/css" href="/static/site.css" />
 </head>
 <body>
+
+    <div><a href="/accounts">/accounts</a></div>
+
+    <div>
+        {% for account in accounts %}
+            <div>
+                Account:{{account.name}} {{account.description}} {{account.balance}} {{account.currency}} 
+                <a href="/account_balance/{{account.id}}">history</a>
+            </div>
+        {% endfor %}
+    </div>
       
     <div>
         <a id='async_status_button' onclick="update_all_accounts()" href="#">Update All</a>
