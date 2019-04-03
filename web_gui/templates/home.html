@@ -11,6 +11,7 @@
     <div><a href="/accounts">Account Graph</a></div>
 
     <div>
+        <!-- TODO Use REST API for dynamic update -->
         {% for account in accounts %}
             <div>
                 Account:{{account.name}} {{account.description}} {{"%.2f" % account.balance}} {{account.currency}} 
@@ -79,6 +80,7 @@
             // data.status can be 'working','done','error','user_query','user_response'
 
             if (data.status == 'done' || data.status == 'error') {
+                // TODO Dynamic update trigger account list in this page
                 $("#async_ok").show();
             } else if (data.status == 'user_query') {
                 $("#async_user_query_form").show();
