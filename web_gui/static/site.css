@@ -4,6 +4,19 @@ body {
     color: #c2c2c2;
 }
 
+a:link {
+    color: rgb(250, 219, 224);
+}
+a:visited {
+    color: rgb(250, 219, 224);
+}
+a:hover {
+    color: rgb(250, 219, 100);
+}
+a:active {
+    color: rgb(230, 95, 147);
+}
+
 .graph_container {
     width: 100%;
 }
