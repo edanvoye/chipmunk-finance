@@ -2,6 +2,7 @@
 from flask import g
 
 from storage import UserData
+from engine import ChipmunkEngine
 
 from . import app, auth
 
@@ -13,6 +14,7 @@ def verify_password(username, password):
     try:
         data.open(username, password)
         g.user = data
+        g.cm = ChipmunkEngine(data)
         return True
     except Exception as e:
         return False

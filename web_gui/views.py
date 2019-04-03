@@ -10,6 +10,11 @@ from . import app, auth
 # TODO Add checkboxes to include or ignore accounts
 # TODO Add fields to change the date range
 
+@app.route("/")
+@auth.login_required
+def home():
+    return render_template('home.html')
+
 @app.route("/account_balance/<account_id>")
 @auth.login_required
 def chart(account_id):
@@ -24,4 +29,3 @@ def chart(account_id):
 @auth.login_required
 def accounts():
     return render_template('accounts.html')
-

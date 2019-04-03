@@ -1,0 +1,95 @@
+<head>
+    <meta charset="utf-8">
+    <title>Chipmunk Finance - Home</title>      
+    <script src="/static/moment.min.js"></script>
+    <script src="/static/Chart.min.js"></script>
+    <script src="/static/jquery-3.3.1.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/site.css" />
+</head>
+<body>
+      
+    <div>
+        <a id='async_status_button' onclick="update_all_accounts()" href="#">Update All</a>
+        <div id='async_dialog'>
+            <span id='async_status_msg'></span>
+            <div id='async_user_query_form' style="display:none;">
+                <div>
+                    <span id='async_user_query'></span>
+                    <input type="text" id="async_user_query_tb">
+                </div>
+                <button onclick="submit_async_user_query()">Submit</button>
+            </div>
+            <a style="display:none;" id='async_ok' onclick="async_press_ok()" href="#">OK</a>
+        </div>
+    </div>
+         
+    <script language="javascript">
+
+    var action_id = null;
+
+    function submit_async_user_query() {
+
+        // TODO Disable button
+
+        var data = {'user_response':$('#async_user_query_tb').val()};
+
+        // TODO Send as content, not url parameters
+        $.getJSON("/api/async/update/" + action_id, data, function( data ) {
+            $("#async_user_query_form").hide();
+            check_action_status(action_id);
+        });
+    }
+
+    function enable_update_button(enable) {
+        if (enable) {
+            $("#async_status_button").show();
+        } else {
+            $("#async_status_button").hide();
+        }
+    }
+
+    function async_press_ok() {
+        $("#async_ok").hide();
+        async_set_status_text("");
+        // TODO Hide dialog
+        enable_update_button(true);
+    }
+
+    function async_set_status_text(msg) {
+        $("#async_status_msg").text(msg);
+    }
+
+    function check_action_status(action_id) {
+        $.getJSON("/api/async/status/" + action_id, function( data ) {
+
+            async_set_status_text('Working... ' + data.progress);
+
+            // data.status can be 'working','done','error','user_query','user_response'
+
+            if (data.status == 'done' || data.status == 'error') {
+                $("#async_ok").show();
+            } else if (data.status == 'user_query') {
+                $("#async_user_query_form").show();
+            } else {
+                // continue waiting
+                setTimeout(function(){
+                    check_action_status(action_id);
+                }, 1000);
+            }
+        });
+    }
+    
+    function update_all_accounts() {
+
+        enable_update_button(false);
+        // TODO Display dialog box... ?
+
+        $.getJSON("/api/async/create/account_update", function( data ) {
+            action_id = data.action_id;            
+            check_action_status(action_id);
+        });
+    }
+    
+    </script>
+         
+</body>

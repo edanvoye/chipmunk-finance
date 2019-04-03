@@ -10,9 +10,12 @@ class TangerinePlugin(ProviderPlugin):
     def __init__(self):
         pass
 
-    def update(self, get_user_data, store_user_data, add_account=None, add_transaction=None, last_updates={}):
+    def update(self, get_user_data, store_user_data, add_account=None, add_transaction=None, progress=None, last_updates={}):
 
         with selenium_webdriver() as webdriver:
+
+            if progress:
+                progress('Log In')
 
             webdriver.get('https://www.tangerine.ca/app/#/?locale=en_US')
             time.sleep(5) # TODO Wait for new page to appear
@@ -53,9 +56,12 @@ class TangerinePlugin(ProviderPlugin):
                 json_accounts = webdriver.find_element_by_xpath("/html/body/pre").text
                 account_data = json.loads(json_accounts).get('accounts', [])
 
-                for account in account_data:
+                for i,account in enumerate(account_data):
 
                     acc_id = account['number']
+
+                    if progress:
+                        progress(f'Account:{i+1}/{len(account_data)}')
 
                     # Add account to database
                     add_account(acc_id, 

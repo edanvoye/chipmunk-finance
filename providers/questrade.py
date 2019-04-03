@@ -18,7 +18,10 @@ class QuestradePlugin(ProviderPlugin):
     def __init__(self):
         pass
 
-    def update(self, get_user_data, store_user_data, add_account=None, add_transaction=None, last_updates={}):
+    def update(self, get_user_data, store_user_data, add_account=None, add_transaction=None, progress=None, last_updates={}):
+
+        if progress:
+            progress('Log In')
 
         # First go to Questrade's webside. In your account, go to App Hub
         # and press Register Personal App.
@@ -53,6 +56,9 @@ class QuestradePlugin(ProviderPlugin):
 
                     if account['status'] != 'Active':
                         continue
+
+                    if progress:
+                        progress('Account:'+acc_id)
 
                     # Also fetch CAD balance for this account
                     cad_balance = 0.0

@@ -2,6 +2,7 @@
 import os
 from storage import UserData
 from currency import currency_current_rate
+import time
 
 class Provider():
     def __init__(self):
@@ -16,8 +17,8 @@ class Transaction():
         pass
 
 class ChipmunkEngine():
-    def __init__(self):
-        self.data = None
+    def __init__(self, data=None):
+        self.data = data
         self.provider_classes = {}
         self.load_providers_plugins()
 
@@ -112,6 +113,8 @@ class ChipmunkEngine():
 
     def update_providers(self, progress_cb, user_query):
 
+        total_added = 0
+
         progress_cb('Updating All Providers')
 
         # List all registered providers from database
@@ -122,7 +125,7 @@ class ChipmunkEngine():
 
             added_transactions = []
 
-            progress_cb('Updating Provider #%d: %s' % (id,name))
+            progress_cb('Updating Provider #%d %s' % (id,name))
 
             # Instanciate provider
             if not name in self.provider_classes:
@@ -160,8 +163,11 @@ class ChipmunkEngine():
             # create dict of last update date for each known account
             last_account_update = {account['bank_id']: account['last_update'] for account in self.data.iter_accounts(id)}
 
+            def progress_fct(msg):
+                progress_cb('Updating Provider #%d %s: %s' % (id,name,msg))
+
             # Call plugin to update provider via web scraping
-            provider.update(get_user_data, store_user_data, add_account, add_transaction, last_updates=last_account_update)
+            provider.update(get_user_data, store_user_data, add_account, add_transaction, progress=progress_fct, last_updates=last_account_update)
 
             # Update database
             if uncleared_transactions:
@@ -170,6 +176,10 @@ class ChipmunkEngine():
             self.data.update_provider(id, data)
 
             print('Added %d transactions from %s (#%d)' % (len(added_transactions),name,id))
+
+            total_added = total_added + len(added_transactions)
+
+        return total_added
 
     def to_base_currency(self, currency, amount):
         return amount * currency_current_rate(currency, self.data.base_currency())
@@ -181,10 +191,27 @@ class ChipmunkEngine():
         from threading import Thread 
         t = Thread(target=ChipmunkEngine.account_update_thread, args=(self,action_id))
         t.start()
+        
         return action_id
 
     def account_update_thread(self,action_id):
         # Worker thread to process one async action
+
+        # # TEMPORARY TEST
+        # for i in range(5):
+        #     self.data.action_update(action_id, status='working', progress=f'test{i}')
+        #     time.sleep(3)
+        # self.data.action_update(action_id, status='user_query', user_query='Username?')
+        # status = 'working'
+        # while status != 'user_response':
+        #     status,_,_,user_response = self.data.action_status(action_id)
+        #     time.sleep(1)
+        # print(user_response)
+        # for i in range(5):
+        #     self.data.action_update(action_id, status='working', progress=f'after{i}')
+        #     time.sleep(3)
+        # self.data.action_update(action_id, status='done')
+        # return
 
         print(f'Run thread to process action {action_id}')
 
@@ -197,23 +224,10 @@ class ChipmunkEngine():
             while status != 'user_response':
                 status,_,_,user_response = self.data.action_status(action_id)
                 # TODO Check timeout, and return None if too long
+                time.sleep(1)
             self.data.action_update(action_id, status='working')
             return user_response
 
-        self.update_providers(progress_cb, user_query)
+        total_added = self.update_providers(progress_cb, user_query)
 
-        # TODO Add a way for webpage to start an update by calling:
-        #    cm.create_account_update_async_action()
-
-        # TODO Implement async action in website:
-        # in parallel, the website will repeatedly call self.data.action_status(id)
-        # and display a prompt if status='user_query' or 'user_password'
-        # when the user fills the prompt we call :
-        #    self.data.action_update(id, status='user_response', user_response='blabla')
-        # Wait until we get the status='done'
-
-        # TODO Need 3 REST endpoints:
-        # /api/async/create/account_update  # call cm.create_account_update_async_action()
-        # /api/async/status/<action_id>     # to read status, user_query, user_password 
-        # /api/async/update/<action_id>     # to send user_response
-    
+        self.data.action_update(action_id, status='done', progress=f'Added {total_added} transactions')

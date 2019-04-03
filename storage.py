@@ -150,6 +150,10 @@ class UserData():
         return cur.lastrowid
 
     def action_update(self, action_id, status, progress=None, user_query=None, user_response=None):
+        
+        if status not in ['working','done','error','user_query','user_response']:
+            raise Exception(f'Invalid status: {status}')
+        
         cur = self.conn.cursor()
         if progress:
             sql = 'UPDATE actions SET status=?,progress=?,user_query=?,user_response=?,modified=? WHERE id=?'
@@ -204,6 +208,7 @@ class UserData():
 
         # Create database
         conn = sqlite3.connect(db_file, check_same_thread=False)
+        conn.row_factory = sqlite3.Row
         self._update_tables(conn)
 
         # Create one row in user table
@@ -225,6 +230,7 @@ class UserData():
 
         db_file = os.path.join('userdata', username + '.db')
         conn = sqlite3.connect(db_file, check_same_thread=False)
+        conn.row_factory = sqlite3.Row
 
         # Update DB if the tables have changed
         self._update_tables(conn)

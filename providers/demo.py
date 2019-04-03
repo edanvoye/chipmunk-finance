@@ -9,7 +9,7 @@ class DemoBankPlugin(ProviderPlugin):
     def __init__(self):
         pass
 
-    def update(self, get_user_data, store_user_data, add_account=None, add_transaction=None, last_updates={}):
+    def update(self, get_user_data, store_user_data, add_account=None, add_transaction=None, progress=None, last_updates={}):
         # Demo Provider
 
         # Load main webpage, need username and password
