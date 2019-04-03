@@ -291,7 +291,7 @@ class UserData():
 
         # Store historical account balance
         balance = kwargs.get('balance', 0.0)
-        self.add_historical_balance(account_id, datetime.date.today(), balance)
+        self.add_historical_balance(account_id, datetime.datetime.now(), balance)
 
         # TODO Update account data ?
 
