@@ -102,6 +102,19 @@
         return parseFloat(Math.round(value * 100) / 100).toFixed(2);
     }
 
+    function load_latest_transactions(account_id, count) {
+
+        // Load account transactions
+        $.getJSON(`/api/transactions/${account_id}?count=${count}`, function( data ) {
+            $(`#transactions_${account_id}`).empty();
+            data.forEach((item) => {
+                var item_html = `<div class="transaction ${item.uncleared?'uncleared':''} ${item.added_today?'new':''}">${item.date.substring(0,10)} <b>${item.type}</b> <i>${item.description}</i> <b>${item.amount} {{account_currency}}</b></div>`;
+                $(`#transactions_${account_id}`).append(item_html);
+            });
+        });
+
+    }    
+
     function load_accounts_data() {
 
       // Load account transactions
@@ -110,10 +123,12 @@
          data.forEach((account) => {
             var item_html = `<div>
                     Account:${account.name} ${account.description} ${format_currency(account.balance)} ${account.currency} 
-                    <a href="/account_balance/${account.id}">history</a>
+                    <a href="/account_balance/${account.id}">Details</a>
+                    <div class='account_transactions' id="transactions_${account.id}"></div>
                 </div>`;
                 console.log(item_html);
             $("#account_list").append(item_html);
+            load_latest_transactions(account.id, 4);
          });
       });
 
