@@ -15,7 +15,7 @@ class TangerinePlugin(ProviderPlugin):
         with selenium_webdriver() as webdriver:
 
             if progress:
-                progress('Log In')
+                progress('Logging In...')
 
             webdriver.get('https://www.tangerine.ca/app/#/?locale=en_US')
             time.sleep(5) # TODO Wait for new page to appear

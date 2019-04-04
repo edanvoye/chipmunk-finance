@@ -21,7 +21,7 @@ class QuestradePlugin(ProviderPlugin):
     def update(self, get_user_data, store_user_data, add_account=None, add_transaction=None, progress=None, last_updates={}):
 
         if progress:
-            progress('Log In')
+            progress('Logging In...')
 
         # First go to Questrade's webside. In your account, go to App Hub
         # and press Register Personal App.
