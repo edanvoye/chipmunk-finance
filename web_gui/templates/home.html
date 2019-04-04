@@ -9,13 +9,12 @@
 <body>
 
     <div><a href="/accounts">Account Graph</a></div>
-
-    <div id="account_list"></div>
       
     <div>
-        <a id='async_status_button' onclick="update_all_accounts()" href="#">Update All</a>
-        <div id='async_dialog' style="display:none;">
+        <a onclick="update_all_accounts()" href="#">Update All Accounts</a>
+        <div class="dialog-parent" id='async_dialog'>
             <div class='dialog'>
+                <div style="margin-bottom: 18px;">Updating accounts, please wait...</div>
                 <span id='async_status_msg'></span>
                 <div id='async_user_query_form' style="display:none;">
                     <div>
@@ -28,7 +27,9 @@
             </div>
         </div>
     </div>
-         
+
+    <div id="account_list"></div>
+
     <script language="javascript">
 
 // TODO: On page load get latest action to resume
@@ -47,19 +48,10 @@
         });
     }
 
-    function enable_update_button(enable) {
-        if (enable) {
-            $("#async_status_button").show();
-        } else {
-            $("#async_status_button").hide();
-        }
-    }
-
     function async_press_ok() {
         $("#async_ok").hide();
         async_set_status_text("");
         $("#async_dialog").hide();
-        enable_update_button(true);
     }
 
     function async_set_status_text(msg) {
@@ -89,7 +81,6 @@
     
     function update_all_accounts() {
 
-        enable_update_button(false);
         $("#async_dialog").show();
 
         $.getJSON("/api/async/create/account_update", function( data ) {
