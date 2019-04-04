@@ -32,3 +32,13 @@ a:active {
       width: 100%;
     }
   }
+
+.transaction {
+    color: rgb(146, 146, 146);
+}
+.uncleared {
+    font-style: italic;
+}
+.new {
+    color: rgb(244, 250, 168);
+}

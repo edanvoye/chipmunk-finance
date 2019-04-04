@@ -16,6 +16,11 @@
    <canvas id="myChart"></canvas>
 </div>
 
+<div>
+   <div>Latest Transactions</div>
+   <div id="transaction_list"></div>
+</div>
+
 <script language="javascript">
    var account_id = {{account_id}};
    var ctx = document.getElementById('myChart').getContext('2d');
@@ -90,8 +95,22 @@
       
    }
 
+   function load_latest_transactions(account_id, count) {
+
+      // Load account transactions
+      $.getJSON(`/api/transactions/${account_id}?count=${count}`, function( data ) {
+         $("#transaction_list").empty();
+         data.forEach((item) => {
+            var item_html = `<div class="transaction ${item.uncleared?'uncleared':''} ${item.added_today?'new':''}">${item.date} <b>${item.type}</b> <i>${item.description}</i> <b>${item.amount} {{account_currency}}</b></div>`;
+            $("#transaction_list").append(item_html);
+         });
+      });
+
+   }
+
    $( document ).ready(function() {
       load_chart_data(account_id);
+      load_latest_transactions(account_id, 20);
    });
 
 </script>
