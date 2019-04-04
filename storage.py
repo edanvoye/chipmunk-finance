@@ -342,7 +342,8 @@ class UserData():
             sql = sql + ' LIMIT %d OFFSET %d' % (limit,offset)
         cur.execute(sql, (account_id,))
         for id,description,ttype,amount,date,added,uncleared in cur.fetchall():
-            yield {'id':id, 'description':description, 'type':ttype, 'amount':amount, 'date':date, 'added':added, 'uncleared':uncleared}
+            added_today = str(datetime.datetime.now().date()) == added[:10]
+            yield {'id':id, 'description':description, 'type':ttype, 'amount':amount, 'date':date, 'added':added, 'uncleared':uncleared, 'added_today':added_today}
 
     def iter_historical_balance(self, account_id, limit=None, offset=0):
         cur = self.conn.cursor()
