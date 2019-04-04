@@ -21,7 +21,7 @@ class AccountTransactions(AuthResource):
     def get(self, account_id):
         args = parser.parse_args()
         return [t for t in g.user.iter_transactions(account_id, args['count'], args['offset'])]
-api.add_resource(AccountTransactions, '/transactions/<account_id>')
+api.add_resource(AccountTransactions, '/transactions/<int:account_id>')
 
 class AccountBalanceHistory(AuthResource):
     def get(self, account_id):
@@ -34,7 +34,7 @@ class AccountBalanceHistory(AuthResource):
             'description':description,
             'history':[b for b in g.user.iter_historical_balance(account_id, args['count'], args['offset'])]}
         return ret
-api.add_resource(AccountBalanceHistory, '/history/<account_id>')
+api.add_resource(AccountBalanceHistory, '/history/<int:account_id>')
 
 class AccountList(AuthResource):
     def get(self):
@@ -42,19 +42,21 @@ class AccountList(AuthResource):
         return [a for a in g.user.iter_accounts()]
 api.add_resource(AccountList, '/accounts')
 
+## API for async actions
+
 @rest_api.route("/async/create/account_update")
 @auth.login_required
 def async_create_account_update():
     action_id = g.cm.create_account_update_async_action()
     return jsonify({'rcode':'OK', 'action_id':action_id})
 
-@rest_api.route("/async/status/<action_id>")
+@rest_api.route("/async/status/<int:action_id>")
 @auth.login_required
 def async_action_status(action_id):
     status,progress,user_query,_ = g.user.action_status(action_id)
     return jsonify({'status':status,'progress':progress,'user_query':user_query})
 
-@rest_api.route("/async/update/<action_id>")
+@rest_api.route("/async/update/<int:action_id>")
 @auth.login_required
 def async_action_update(action_id):
     user_response = request.args.get('user_response')

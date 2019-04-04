@@ -15,7 +15,7 @@ from . import app, auth
 def home():
     return render_template('home.html', accounts=[a for a in g.user.iter_accounts()])
 
-@app.route("/account_balance/<account_id>")
+@app.route("/account_balance/<int:account_id>")
 @auth.login_required
 def chart(account_id):
     name,currency,balance,description = g.user.get_account_info(account_id)
