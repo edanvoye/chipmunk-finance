@@ -42,3 +42,13 @@ a:active {
 .new {
     color: rgb(244, 250, 168);
 }
+
+.dialog {
+    margin: 3px;
+    padding: 3px;
+    border: 1px;
+    border-style: solid;
+    border-radius: 2px;
+    border-color: #858585;
+    background-color: #3d3d3d;
+}

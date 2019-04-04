@@ -13,7 +13,7 @@ from . import app, auth
 @app.route("/")
 @auth.login_required
 def home():
-    return render_template('home.html', accounts=[a for a in g.user.iter_accounts()])
+    return render_template('home.html')
 
 @app.route("/account_balance/<int:account_id>")
 @auth.login_required

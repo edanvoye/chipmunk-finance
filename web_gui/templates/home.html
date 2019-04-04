@@ -10,28 +10,22 @@
 
     <div><a href="/accounts">Account Graph</a></div>
 
-    <div>
-        <!-- TODO Use REST API for dynamic update -->
-        {% for account in accounts %}
-            <div>
-                Account:{{account.name}} {{account.description}} {{"%.2f" % account.balance}} {{account.currency}} 
-                <a href="/account_balance/{{account.id}}">history</a>
-            </div>
-        {% endfor %}
-    </div>
+    <div id="account_list"></div>
       
     <div>
         <a id='async_status_button' onclick="update_all_accounts()" href="#">Update All</a>
-        <div id='async_dialog'>
-            <span id='async_status_msg'></span>
-            <div id='async_user_query_form' style="display:none;">
-                <div>
-                    <span id='async_user_query'></span>
-                    <input type="text" id="async_user_query_tb">
+        <div id='async_dialog' style="display:none;">
+            <div class='dialog'>
+                <span id='async_status_msg'></span>
+                <div id='async_user_query_form' style="display:none;">
+                    <div>
+                        <span id='async_user_query'></span>
+                        <input type="text" id="async_user_query_tb">
+                    </div>
+                    <button onclick="submit_async_user_query()">Submit</button>
                 </div>
-                <button onclick="submit_async_user_query()">Submit</button>
+                <a style="display:none;" id='async_ok' onclick="async_press_ok()" href="#">OK</a>
             </div>
-            <a style="display:none;" id='async_ok' onclick="async_press_ok()" href="#">OK</a>
         </div>
     </div>
          
@@ -64,7 +58,7 @@
     function async_press_ok() {
         $("#async_ok").hide();
         async_set_status_text("");
-        // TODO Hide dialog
+        $("#async_dialog").hide();
         enable_update_button(true);
     }
 
@@ -80,7 +74,7 @@
             // data.status can be 'working','done','error','user_query','user_response'
 
             if (data.status == 'done' || data.status == 'error') {
-                // TODO Dynamic update trigger account list in this page
+                load_accounts_data();
                 $("#async_ok").show();
             } else if (data.status == 'user_query') {
                 $("#async_user_query_form").show();
@@ -96,14 +90,39 @@
     function update_all_accounts() {
 
         enable_update_button(false);
-        // TODO Display dialog box... ?
+        $("#async_dialog").show();
 
         $.getJSON("/api/async/create/account_update", function( data ) {
             action_id = data.action_id;            
             check_action_status(action_id);
         });
     }
+
+    function format_currency(value) {
+        return parseFloat(Math.round(value * 100) / 100).toFixed(2);
+    }
+
+    function load_accounts_data() {
+
+      // Load account transactions
+      $.getJSON(`/api/accounts`, function( data ) {
+         $("#account_list").empty();
+         data.forEach((account) => {
+            var item_html = `<div>
+                    Account:${account.name} ${account.description} ${format_currency(account.balance)} ${account.currency} 
+                    <a href="/account_balance/${account.id}">history</a>
+                </div>`;
+                console.log(item_html);
+            $("#account_list").append(item_html);
+         });
+      });
+
+    }
     
+    $( document ).ready(function() {
+        load_accounts_data();
+    });
+
     </script>
          
 </body>
