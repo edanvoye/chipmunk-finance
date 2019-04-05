@@ -100,7 +100,7 @@
         $.getJSON(`/api/transactions/${account_id}?count=${count}`, function( data ) {
             $(`#transactions_${account_id}`).empty();
             data.forEach((item) => {
-                var item_html = `<div class="transaction ${item.uncleared?'uncleared':''} ${item.added_today?'new':''}">${item.date.substring(0,10)} <b>${item.type}</b> <i>${item.description}</i> <b>${item.amount} {{account_currency}}</b></div>`;
+                var item_html = `<div class="transaction ${item.uncleared?'uncleared':''} ${item.added_today?'new':''}">${item.date.substring(0,10)} <b>${item.type}</b> <i>${item.description}</i> <b>${format_currency(item.amount)} {{account_currency}}</b></div>`;
                 $(`#transactions_${account_id}`).append(item_html);
             });
         });
