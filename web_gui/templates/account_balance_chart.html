@@ -14,6 +14,13 @@
 <h2>Account Balance for {{account_name}} ({{account_description}})</h2>
 
 <div style="width:100%;">
+   <select name="graph_date_range" onchange="load_chart_data(account_id);">
+      <option value="last_30_days" selected>Last 30 days</option>
+      <option value="last_90_days">Last 90 days</option>
+      <option value="last_12_months">Last 12 Months</option>
+      <option value="ytd">Year To Date</option>
+      <option value="last_year">Last Year</option>
+   </select>
    <canvas id="myChart"></canvas>
 </div>
 
@@ -27,15 +34,7 @@
    var ctx = document.getElementById('myChart').getContext('2d');
    var chart = new Chart(ctx, {
       type: 'line',
-      data: {
-         datasets: [{
-            label: 'Balance',
-            backgroundColor: 'rgb(255, 99, 132)',
-            borderColor: 'rgb(255, 99, 132)',
-            lineTension: 0,
-            data : []
-         }]
-      },
+      data: {},
       options: {
          legend: {
             display: false
@@ -87,11 +86,54 @@
 
    function load_chart_data(account_id) {
 
+      var date_from = new Date();
+      var date_to = new Date();
+
+      switch ($("select[name=graph_date_range]").val()) {
+         case 'last_30_days':
+            date_from.setDate(date_to.getDate() - 30);
+            break;
+         case 'last_90_days':
+            date_from.setDate(date_to.getDate() - 90);
+            break;
+         case 'last_12_months':
+            date_from.setDate(date_to.getDate() - 365);
+            break;
+         case 'ytd':
+            date_from.setDate(1);
+            date_from.setMonth(0);
+            break;
+         case 'last_year':
+            date_from.setFullYear(date_from.getFullYear()-1);
+            date_from.setDate(1);
+            date_from.setMonth(0);
+            date_to.setFullYear(date_from.getFullYear());
+            date_to.setMonth(12);
+            date_to.setDate(31);
+            break;
+      }
+
+      var date_from_s = moment(date_from).format('YYYY-MM-DD');
+      var date_to_s = moment(date_to).format('YYYY-MM-DD');
+
+      // Clear graph
+      var new_data = {
+         datasets: [{
+            label: 'Balance',
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(255, 99, 132)',
+            lineTension: 0,
+            data : []
+         }]
+      };
+
       // Load account balance history data
-      $.getJSON( "/api/history/" + account_id, function( data ) {
+      var url = `/api/history_by_date/${account_id}?from=${date_from_s}&to=${date_to_s}`;
+      $.getJSON(url, function( data ) {
          data.history.forEach((item) => {
-            chart.data.datasets[0].data.push({x:moment(item.date).valueOf(), y:item.balance});
+            new_data.datasets[0].data.push({x:moment(item.date).valueOf(), y:item.balance});
          });
+         chart.data = new_data;
          chart.update();
       });      
       
