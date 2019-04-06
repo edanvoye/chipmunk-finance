@@ -10,6 +10,10 @@ parser = reqparse.RequestParser()
 parser.add_argument('count', type=int, default=20)
 parser.add_argument('offset', type=int, default=0)
 
+daterange_parser = reqparse.RequestParser()
+daterange_parser.add_argument('from', type=str, default=None)
+daterange_parser.add_argument('to', type=str, default=None)
+
 api = Api(rest_api)
 
 ## REST API
@@ -35,6 +39,19 @@ class AccountBalanceHistory(AuthResource):
             'history':[b for b in g.user.iter_historical_balance(account_id, args['count'], args['offset'])]}
         return ret
 api.add_resource(AccountBalanceHistory, '/history/<int:account_id>')
+
+class AccountBalanceHistoryByDate(AuthResource):
+    def get(self, account_id):
+        args = daterange_parser.parse_args()
+        name,currency,balance,description = g.user.get_account_info(account_id)
+        ret = {
+            'id':account_id,
+            'name':name,
+            'currency':currency,
+            'description':description,
+            'history':[b for b in g.user.get_transactions_for_range(account_id, args['from'], args['to'])]}
+        return ret
+api.add_resource(AccountBalanceHistoryByDate, '/history_by_date/<int:account_id>')
 
 class AccountList(AuthResource):
     def get(self):

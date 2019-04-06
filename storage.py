@@ -5,6 +5,10 @@ import random
 import json
 import datetime
 
+def daterange(start_date, end_date):
+    for n in range(int ((end_date - start_date).days) + 1):
+        yield start_date + datetime.timedelta(n)
+
 def _cipher_from_password(password, salt):
     import base64
     from cryptography.fernet import Fernet
@@ -353,6 +357,25 @@ class UserData():
         cur.execute(sql, (account_id,))
         for date,balance in cur.fetchall():
             yield {'date':date, 'balance':balance}
+
+    def get_transactions_for_range(self, account_id, date_from, date_to):
+        cur = self.conn.cursor()
+        date1 = datetime.datetime.strptime(date_from, '%Y-%m-%d').date()
+        date2 = datetime.datetime.strptime(date_to, '%Y-%m-%d').date()
+        for d in daterange(date1, date2):
+            # Compute EOD Balance for this account for the specified date
+            sql = """SELECT b.date,balance,
+                (SELECT sum(amount) FROM transactions as t WHERE t.fk_account=b.fk_account AND strftime('%s',t.date)>strftime('%s',b.date) AND strftime('%s',t.date)<strftime('%s',?) ) 
+                FROM historical_balance as b
+                WHERE fk_account=? AND substr(b.date,0,11)<=? 
+                ORDER BY strftime('%s',b.date) DESC 
+                LIMIT 1"""
+            cur.execute(sql, (d + datetime.timedelta(1),account_id,d))
+            eod_balance = 0.0
+            for row in cur.fetchall():
+                eod_balance = row[1] + (row[2] if row[2] else 0.0)
+
+            yield {'date':str(d), 'balance':eod_balance}
 
     def find_transaction(self, account_id, transaction_id, **kwargs):
 
