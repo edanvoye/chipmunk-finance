@@ -36,6 +36,7 @@
       type: 'line',
       data: {},
       options: {
+         elements: { point: { radius: 0 } },
          legend: {
             display: false
          },
@@ -91,19 +92,24 @@
 
       switch ($("select[name=graph_date_range]").val()) {
          case 'last_30_days':
+            chart.options.scales.xAxes[0].time.unitStepSize = 1;
             date_from.setDate(date_to.getDate() - 30);
             break;
          case 'last_90_days':
+            chart.options.scales.xAxes[0].time.unitStepSize = 2;
             date_from.setDate(date_to.getDate() - 90);
             break;
          case 'last_12_months':
+            chart.options.scales.xAxes[0].time.unitStepSize = 14;
             date_from.setDate(date_to.getDate() - 365);
             break;
          case 'ytd':
+            chart.options.scales.xAxes[0].time.unitStepSize = 14;
             date_from.setDate(1);
             date_from.setMonth(0);
             break;
          case 'last_year':
+            chart.options.scales.xAxes[0].time.unitStepSize = 14;
             date_from.setFullYear(date_from.getFullYear()-1);
             date_from.setDate(1);
             date_from.setMonth(0);
