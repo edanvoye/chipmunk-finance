@@ -63,13 +63,16 @@ class TangerinePlugin(ProviderPlugin):
                     if progress:
                         progress(f'Account:{i+1}/{len(account_data)}')
 
+                    if account['type']=='CREDIT_CARD' or account['type']=='LOAN':
+                        account['account_balance'] = -account['account_balance'] # negative balance for debt
+
                     # Add account to database
                     add_account(acc_id, 
                         name=account.get('nickname', account['description']), 
                         description=account['description'], 
                         type=account['type'], 
                         currency=account['currency_type'], 
-                        balance=account['account_balance'])
+                        balance=account['account_balance']) 
 
                     if add_transaction:
 
