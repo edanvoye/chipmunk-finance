@@ -29,3 +29,8 @@ def chart(account_id):
 @auth.login_required
 def accounts():
     return render_template('accounts.html')
+
+@app.route("/accounts_history")
+@auth.login_required
+def accounts_history():
+    return render_template('accounts_history.html')

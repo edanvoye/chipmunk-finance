@@ -1,0 +1,213 @@
+<head>
+        <meta charset="utf-8">
+        <title>Chipmunk Finance - Accounts</title>      
+        <script src="/static/moment.min.js"></script>
+        <script src="/static/Chart.min.js"></script>
+        <script src="/static/jquery-3.3.1.min.js"></script>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="/static/site.css" />
+    </head>
+    <body>
+    
+        <div><a href="/">&lt;&lt; Home</a></div>
+         
+        <h2>Accounts</h2>
+         
+        <div>
+            <select name="graph_date_range" onchange="load_account_data();">
+                <option value="last_30_days" selected>Last 30 days</option>
+                <option value="last_90_days">Last 90 days</option>
+                <option value="last_12_months">Last 12 Months</option>
+                <option value="ytd">Year To Date</option>
+                <option value="last_year">Last Year</option>
+            </select>
+        </div>
+
+        <div>
+            <div>
+                <div>Savings</div>
+                <canvas id="canvasChart_Savings"></canvas>
+            </div>
+            <div>
+                <div>Investments</div>
+                <canvas id="canvasChart_Investment"></canvas>
+            </div>
+            <div>
+                <div>Debt</div>
+                <canvas id="canvasChart_Debt"></canvas>
+            </div>
+        </div>  
+         
+         <script language="javascript">
+    
+            function getColor(index) {
+                var colors = ['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', 
+                    '#42d4f4', '#f032e6', '#bfef45', '#fabebe', '#469990', '#e6beff', '#9A6324', 
+                    '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9'];
+                return colors[index % colors.length];
+            }
+
+            function createChart(ctx) {
+
+                return new Chart(ctx, {
+                    type: 'line',
+                    data: {},
+                    options: {
+                        elements: { point: { radius: 0 } },
+                        legend: {
+                            display: false
+                        },
+                        responsive: true,
+                        title: {
+                            display: true,
+                            text: 'Account Balance Over Time'
+                        },
+                        scales: {
+                            xAxes: [{
+                            type: 'time',
+                            display: true,
+                            scaleLabel: {
+                                display: false,
+                                labelString: 'Date'
+                            },
+                            ticks: {
+                                autoSkip: true,
+                                major: {
+                                    fontStyle: 'bold',
+                                    fontColor: '#FF0000'
+                                }
+                            },
+                            time: {
+                                unit: 'day',
+                                unitStepSize: 1,
+                                displayFormats: {
+                                    'day': 'YYYY MMM DD'
+                                }
+                            }
+                            }],
+                            yAxes: [{
+                                //stacked: true,
+                                display: true,
+                                scaleLabel: {
+                                    display: false,
+                                    labelString: 'Account Balance'
+                                },
+                                ticks: {
+                                    beginAtZero: true,
+                                    // Include a dollar sign in the ticks
+                                    callback: function(value, index, values) {
+                                        return '{{account_currency}} ' + value.toFixed(2);
+                                    }
+                                }
+                            }]
+                        }
+                    }
+                });
+            }
+    
+            var chart_Savings = createChart( document.getElementById('canvasChart_Savings').getContext('2d') );
+            var chart_Investment = createChart( document.getElementById('canvasChart_Investment').getContext('2d') );
+            var chart_Debt = createChart( document.getElementById('canvasChart_Debt').getContext('2d') );
+         
+            function chartForType(type) {
+                if (type=='investment') {
+                    return chart_Investment;
+                }
+                if (type=='debt') {
+                    return chart_Debt;
+                }
+                return chart_Savings;
+            }
+    
+            function load_account_data() {
+
+                var date_from = new Date();
+                var date_to = new Date();
+
+                switch ($("select[name=graph_date_range]").val()) {
+                    case 'last_30_days':
+                        //chart.options.scales.xAxes[0].time.unitStepSize = 1;
+                        date_from.setDate(date_to.getDate() - 30);
+                        break;
+                    case 'last_90_days':
+                        //chart.options.scales.xAxes[0].time.unitStepSize = 2;
+                        date_from.setDate(date_to.getDate() - 90);
+                        break;
+                    case 'last_12_months':
+                        //chart.options.scales.xAxes[0].time.unitStepSize = 14;
+                        date_from.setDate(date_to.getDate() - 365);
+                        break;
+                    case 'ytd':
+                        //chart.options.scales.xAxes[0].time.unitStepSize = 14;
+                        date_from.setDate(1);
+                        date_from.setMonth(0);
+                        break;
+                    case 'last_year':
+                        //chart.options.scales.xAxes[0].time.unitStepSize = 14;
+                        date_from.setFullYear(date_from.getFullYear()-1);
+                        date_from.setDate(1);
+                        date_from.setMonth(0);
+                        date_to.setFullYear(date_from.getFullYear());
+                        date_to.setMonth(12);
+                        date_to.setDate(31);
+                        break;
+                }
+
+                var date_from_s = moment(date_from).format('YYYY-MM-DD');
+                var date_to_s = moment(date_to).format('YYYY-MM-DD');
+
+                // Clear graph
+                chart_Savings.data = {
+                    datasets: []
+                };
+                chart_Investment.data = {
+                    datasets: []
+                };
+                chart_Debt.data = {
+                    datasets: []
+                }; 
+
+                // Load account data
+                $.getJSON("/api/accounts", function( data ) {
+
+                var i = 0;         
+                data.forEach((item) => {
+
+                    var chart = chartForType(item.base_type);
+                    var color = getColor(i);               
+
+                    // Load account balance history data
+                    var url = `/api/history_by_date/${item.id}?from=${date_from_s}&to=${date_to_s}`;
+                    $.getJSON(url, function( data ) {
+                        var dataset = {
+                            label: item.name || item.description,
+                            backgroundColor: color,
+                            borderColor: color,
+                            lineTension: 0,
+                            data : [],
+                            type: 'line',
+                            pointRadius: 0,
+                            fill: false,
+                            lineTension: 0,
+                            borderWidth: 2
+                        }
+                        data.history.forEach((item) => {
+                            dataset.data.push({x:moment(item.date).valueOf(), y:item.balance});
+                        });
+                        chart.data.datasets.push(dataset);
+                        chart.update();
+                    });
+
+                    i++;
+                });
+              });      
+               
+            }
+         
+            $( document ).ready(function() {
+               load_account_data();
+            });
+         
+         </script>
+         
+         </body>
