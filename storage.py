@@ -360,20 +360,39 @@ class UserData():
 
     def get_transactions_for_range(self, account_id, date_from, date_to):
         cur = self.conn.cursor()
+
+        # Get earliest Balance value for each account
+        sql = 'SELECT date,balance FROM historical_balance WHERE fk_account=? ORDER BY date ASC LIMIT 1'
+        cur.execute(sql, (account_id,))
+        earliest_date, earliest_balance = cur.fetchone()
+
         date1 = datetime.datetime.strptime(date_from, '%Y-%m-%d').date()
         date2 = datetime.datetime.strptime(date_to, '%Y-%m-%d').date()
         for d in daterange(date1, date2):
-            # Compute EOD Balance for this account for the specified date
-            sql = """SELECT b.date,balance,
-                (SELECT sum(amount) FROM transactions as t WHERE t.fk_account=b.fk_account AND strftime('%s',t.date)>strftime('%s',b.date) AND strftime('%s',t.date)<strftime('%s',?) ) 
-                FROM historical_balance as b
-                WHERE fk_account=? AND substr(b.date,0,11)<=? 
-                ORDER BY strftime('%s',b.date) DESC 
-                LIMIT 1"""
-            cur.execute(sql, (d + datetime.timedelta(1),account_id,d))
+
             eod_balance = 0.0
-            for row in cur.fetchall():
-                eod_balance = row[1] + (row[2] if row[2] else 0.0)
+
+            if d < datetime.datetime.strptime(earliest_date, '%Y-%m-%d').date():
+                #print('DEBUG Date is before all stored balances')
+                sql = '''SELECT sum(amount) FROM transactions 
+                    WHERE fk_account=? 
+                    AND strftime('%s',date)>strftime('%s',?)
+                    AND strftime('%s',date)<strftime('%s',?)'''
+                cur.execute(sql, (account_id, d, earliest_date))
+                sum_amounts = cur.fetchone()[0]
+                eod_balance = earliest_balance - (0 if sum_amounts is None else sum_amounts)
+
+            else:
+                # Compute EOD Balance for this account for the specified date
+                sql = """SELECT b.date,balance,
+                    (SELECT sum(amount) FROM transactions as t WHERE t.fk_account=b.fk_account AND strftime('%s',t.date)>strftime('%s',b.date) AND strftime('%s',t.date)<strftime('%s',?) ) 
+                    FROM historical_balance as b
+                    WHERE fk_account=? AND substr(b.date,0,11)<=? 
+                    ORDER BY strftime('%s',b.date) DESC 
+                    LIMIT 1"""
+                cur.execute(sql, (d + datetime.timedelta(1),account_id,d))
+                for row in cur.fetchall():
+                    eod_balance = row[1] + (row[2] if row[2] else 0.0)
 
             yield {'date':str(d), 'balance':eod_balance}
 
