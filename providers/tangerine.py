@@ -11,7 +11,7 @@ class TangerinePlugin(ProviderPlugin):
         pass
 
     def update(self, get_user_data, store_user_data, add_account=None, add_transaction=None, add_positions=None, progress=None, last_updates={}):
-        return
+
         with selenium_webdriver() as webdriver:
 
             if progress:
