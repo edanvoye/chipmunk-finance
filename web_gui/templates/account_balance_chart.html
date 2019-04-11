@@ -24,6 +24,13 @@
    <canvas id="myChart"></canvas>
 </div>
 
+{% if account_type=='investment' %}
+<div>
+   <div>Positions</div>
+   <div style="font-size:80%;" id="position_list"></div>
+</div>
+{% endif %}
+
 <div>
    <div>Latest Transactions</div>
    <div style="font-size:80%; width:160%;" id="transaction_list"></div>
@@ -169,6 +176,18 @@
          });
       });
 
+//{% if account_type=='investment' %}
+      // Load account positions
+      $.getJSON(`/api/positions/${account_id}`, function( data ) {
+         $("#position_list").empty();
+         data.forEach((item) => {
+            // TODO Position currency???
+            var openPL = item.openQuantity * (item.currentPrice - item.averageEntryPrice);
+            var item_html = `<div>${item.symbol} openQuantity:${item.openQuantity} currentPrice:${format_currency(item.currentPrice)} averageEntryPrice:${format_currency(item.averageEntryPrice)} openPL:${format_currency(openPL)}</div>`;
+            $("#position_list").append(item_html);
+         });
+      });
+//{% endif %}
    }
 
    $( document ).ready(function() {

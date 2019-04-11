@@ -27,15 +27,21 @@ class AccountTransactions(AuthResource):
         return [t for t in g.user.iter_transactions(account_id, args['count'], args['offset'])]
 api.add_resource(AccountTransactions, '/transactions/<int:account_id>')
 
+class AccountPositions(AuthResource):
+    def get(self, account_id):
+        return [p for p in g.user.iter_positions(account_id)]
+api.add_resource(AccountPositions, '/positions/<int:account_id>')
+
 class AccountBalanceHistory(AuthResource):
     def get(self, account_id):
         args = parser.parse_args()
-        name,currency,balance,description = g.user.get_account_info(account_id)
+        name,currency,balance,description,base_type = g.user.get_account_info(account_id)
         ret = {
             'id':account_id,
             'name':name,
             'currency':currency,
             'description':description,
+            'base_type':base_type,
             'history':[b for b in g.user.iter_historical_balance(account_id, args['count'], args['offset'])]}
         return ret
 api.add_resource(AccountBalanceHistory, '/history/<int:account_id>')
@@ -43,12 +49,13 @@ api.add_resource(AccountBalanceHistory, '/history/<int:account_id>')
 class AccountBalanceHistoryByDate(AuthResource):
     def get(self, account_id):
         args = daterange_parser.parse_args()
-        name,currency,balance,description = g.user.get_account_info(account_id)
+        name,currency,balance,description,base_type = g.user.get_account_info(account_id)
         ret = {
             'id':account_id,
             'name':name,
             'currency':currency,
             'description':description,
+            'base_type':base_type,
             'history':[b for b in g.user.get_transactions_for_range(account_id, args['from'], args['to'])]}
         return ret
 api.add_resource(AccountBalanceHistoryByDate, '/history_by_date/<int:account_id>')
@@ -80,3 +87,4 @@ def async_action_update(action_id):
     g.user.action_update(action_id, 'user_response', user_response=user_response)
     return jsonify({'rcode':'OK'})
     
+# TODO Rest Api for Positions

@@ -18,11 +18,12 @@ def home():
 @app.route("/account_balance/<int:account_id>")
 @auth.login_required
 def chart(account_id):
-    name,currency,balance,description = g.user.get_account_info(account_id)
+    name,currency,balance,description,base_type = g.user.get_account_info(account_id)
     return render_template('account_balance_chart.html', 
         account_id=account_id, 
         account_name=name, 
-        account_description=description, 
+        account_description=description,
+        account_type=base_type,
         account_currency=currency)
 
 @app.route("/accounts")

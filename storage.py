@@ -384,6 +384,17 @@ class UserData():
         for id,bank_id,name,atype,base_type,description,balance,currency,last_update,nb_transactions in cur.fetchall():
             yield {'id':id, 'bank_id':bank_id, 'name':name, 'type':atype, 'base_type':base_type, 'balance':balance, 'description':description, 'currency':currency, 'transaction_count':nb_transactions, 'last_update':last_update}
 
+    def iter_positions(self, account_id):
+        # TODO Add date query option
+        cur = self.conn.cursor()
+        sql = """SELECT date,symbol,openQuantity,currentPrice,averageEntryPrice 
+                 FROM positions
+                 WHERE fk_account=? AND date=(SELECT MAX(date) FROM positions WHERE fk_account=?)
+                 ORDER BY symbol ASC"""
+        cur.execute(sql, (account_id,account_id))
+        for date,symbol,openQuantity,currentPrice,averageEntryPrice in cur.fetchall():
+            yield {'date':date, 'symbol':symbol, 'openQuantity':openQuantity, 'currentPrice':currentPrice, 'averageEntryPrice':averageEntryPrice}
+
     def iter_transactions(self, account_id, limit=None, offset=0):
         cur = self.conn.cursor()
         sql = "SELECT id,description,type,amount,date,added,uncleared FROM transactions as a WHERE fk_account=? ORDER BY date DESC, added DESC, id DESC"
@@ -502,6 +513,6 @@ class UserData():
     def get_account_info(self, account_id):
         cur = self.conn.cursor()
         sql = ''' 
-            SELECT name,currency,balance,description FROM accounts WHERE id=? '''
+            SELECT name,currency,balance,description,base_type FROM accounts WHERE id=? '''
         ret = cur.execute(sql, (account_id,))
         return cur.fetchone()
