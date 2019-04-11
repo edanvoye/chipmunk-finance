@@ -26,7 +26,7 @@
 
 {% if account_type=='investment' %}
 <div>
-   <div>Positions</div>
+   <div>Positions <span id="positions_sum"></span></div>
    <div style="font-size:80%;" id="position_list"></div>
 </div>
 {% endif %}
@@ -180,13 +180,16 @@
       // Load account positions
       $.getJSON(`/api/positions/${account_id}`, function( data ) {
          $("#position_list").empty();
+         var sum = 0.0;
          data.forEach((item) => {
             // TODO Position currency???
             var openPL = item.openQuantity * (item.currentPrice - item.averageEntryPrice);
             var cl = openPL>=0 ? 'positive_label' : 'negative_label';
-            var item_html = `<div class="position_label"><b>${item.symbol}</b> openQuantity:${item.openQuantity} currentPrice:${format_currency(item.currentPrice)} averageEntryPrice:${format_currency(item.averageEntryPrice)} openPL:<span class="${cl}">${format_currency(openPL)}</span></div>`;
+            var item_html = `<div class="position_label"><b>${item.symbol}</b> Quantity:${item.openQuantity} Price:${format_currency(item.currentPrice)} openPL:<span class="${cl}">${format_currency(openPL)}</span></div>`;
             $("#position_list").append(item_html);
+            sum += item.openQuantity * item.currentPrice;
          });
+         $("#positions_sum").html(`${sum}`); // TODO in base currency
       });
 //{% endif %}
    }
