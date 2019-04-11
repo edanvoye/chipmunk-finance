@@ -18,7 +18,7 @@ class QuestradePlugin(ProviderPlugin):
     def __init__(self):
         pass
 
-    def update(self, get_user_data, store_user_data, add_account=None, add_transaction=None, progress=None, last_updates={}):
+    def update(self, get_user_data, store_user_data, add_account=None, add_transaction=None, add_positions=None, progress=None, last_updates={}):
 
         if progress:
             progress('Logging In...')
@@ -78,6 +78,12 @@ class QuestradePlugin(ProviderPlugin):
 
                     if add_transaction:
                         self._download_transactions(acc_id, add_transaction, last_updates)
+
+                    if add_positions:
+                        # Get positions in this account
+                        response = self.auth_request_get('accounts/%s/positions' % acc_id)
+                        positions_data = response.json()
+                        add_positions(acc_id, positions_data.get('positions', []))
 
         except Exception as e:
             print('Error updating from Questrade')

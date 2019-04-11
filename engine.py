@@ -3,6 +3,7 @@ import os
 from storage import UserData
 from currency import currency_current_rate
 import time
+import datetime
 
 class Provider():
     def __init__(self):
@@ -159,6 +160,10 @@ class ChipmunkEngine():
                         # transaction db_tr_id already exists
                         if db_tr_id in uncleared_transactions:
                             uncleared_transactions.remove(db_tr_id)
+            def add_positions(account_uid, data):
+                account_id = self.find_account(id, account_uid)
+                if account_id:
+                    self.data.add_positions(account_id, data)
                 
             # create dict of last update date for each known account
             last_account_update = {account['bank_id']: account['last_update'] for account in self.data.iter_accounts(id)}
@@ -167,7 +172,7 @@ class ChipmunkEngine():
                 progress_cb('Updating Provider #%d %s: %s' % (id,name,msg))
 
             # Call plugin to update provider via web scraping
-            provider.update(get_user_data, store_user_data, add_account, add_transaction, progress=progress_fct, last_updates=last_account_update)
+            provider.update(get_user_data, store_user_data, add_account, add_transaction, add_positions, progress=progress_fct, last_updates=last_account_update)
 
             # Update database
             if uncleared_transactions:

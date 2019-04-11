@@ -142,6 +142,24 @@ class UserData():
         '''
         c.execute(sql)
 
+        sql = '''
+            CREATE TABLE IF NOT EXISTS positions (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        date TIMESTAMP NOT NULL,
+                        symbol TEXT NOT NULL,
+                        reported TIMESTAMP NOT NULL,
+                        openQuantity INTEGER DEFAULT 0,
+                        currentPrice REAL DEFAULT 0.0,
+                        averageEntryPrice REAL DEFAULT 0.0,
+                        fk_account INTEGER NOT NULL,
+                        FOREIGN KEY(fk_account) REFERENCES accounts(id)
+                        );
+        '''
+        c.execute(sql)
+
+        sql = "CREATE INDEX IF NOT EXISTS index_position_date ON positions(date)"
+        c.execute(sql)
+
     # TODO Function to delete old actions rows
 
     def action_create(self, action):
@@ -175,6 +193,33 @@ class UserData():
 
     def base_currency(self):
         return self._base_currency
+
+    def add_positions(self, acct_id, positions):
+        cur = self.conn.cursor()
+
+        ts = datetime.datetime.now()
+        date_str = ts.isoformat()[:10]
+
+        # Delete all positions for the same day for this account
+        sql = 'DELETE FROM positions WHERE fk_account=? AND date=?'
+        cur.execute(sql, (acct_id,date_str))
+
+        # Insert each entry
+        rows = [(date_str, 
+                 p['symbol'], 
+                 ts,
+                 p.get('openQuantity',0),
+                 p.get('currentPrice',0),
+                 p.get('averageEntryPrice',0),
+                 acct_id
+                 ) for p in positions]
+
+        sql = '''INSERT INTO positions(date, symbol, reported, 
+                    openQuantity, currentPrice, averageEntryPrice, 
+                    fk_account) VALUES(?,?,?,?,?,?,?)'''
+        cur.executemany(sql, rows)
+
+        self.conn.commit()
 
     def add_historical_balance(self, acct_id, date, balance):
         cur = self.conn.cursor()
