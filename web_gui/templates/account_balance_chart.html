@@ -183,7 +183,8 @@
          data.forEach((item) => {
             // TODO Position currency???
             var openPL = item.openQuantity * (item.currentPrice - item.averageEntryPrice);
-            var item_html = `<div>${item.symbol} openQuantity:${item.openQuantity} currentPrice:${format_currency(item.currentPrice)} averageEntryPrice:${format_currency(item.averageEntryPrice)} openPL:${format_currency(openPL)}</div>`;
+            var cl = openPL>=0 ? 'positive_label' : 'negative_label';
+            var item_html = `<div class="position_label"><b>${item.symbol}</b> openQuantity:${item.openQuantity} currentPrice:${format_currency(item.currentPrice)} averageEntryPrice:${format_currency(item.averageEntryPrice)} openPL:<span class="${cl}">${format_currency(openPL)}</span></div>`;
             $("#position_list").append(item_html);
          });
       });

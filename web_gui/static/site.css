@@ -43,6 +43,16 @@ a:active {
     color: rgb(244, 250, 168);
 }
 
+.position_label {
+    color: rgb(146, 146, 146);
+}
+.positive_label {
+    color: rgb(93, 209, 47);
+}
+.negative_label {
+    color: rgb(209, 51, 51);
+}
+
 .dialog-parent {
     background-color: rgba(0,0,0,0.5);
     position: fixed;
