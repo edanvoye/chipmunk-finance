@@ -26,7 +26,7 @@
 
 {% if account_type=='investment' %}
 <div>
-   <div>Positions <span id="positions_sum"></span> {{base_currency}}</div>
+   <div>Positions <span id="positions_sum"></span></div>
    <div style="font-size:80%;" id="position_list"></div>
 </div>
 {% endif %}
@@ -191,7 +191,7 @@
             $("#position_list").append(item_html);
             sum += item.openQuantity * item.currentPrice_base;
          });
-         $("#positions_sum").html(`${format_currency(sum)}`);
+         $("#positions_sum").html(`${format_currency(sum, "{{base_currency}}")}`);
       });
 //{% endif %}
    }

@@ -121,7 +121,7 @@
          $("#account_list").empty();
          data.forEach((account) => {
             var item_html = `<div>
-                    Account:${account.name} ${account.description} ${format_currency(account.balance)} ${account.currency} 
+                    Account:${account.name} ${account.description} ${format_currency(account.balance, account.currency)} 
                     <a href="/account_balance/${account.id}">Details</a>
                     <div class='account_transactions' id="transactions_${account.id}"></div>
                 </div>`;
