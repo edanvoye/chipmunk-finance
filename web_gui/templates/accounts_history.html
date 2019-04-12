@@ -18,6 +18,7 @@
                 <option value="last_30_days" selected>Last 30 days</option>
                 <option value="last_90_days">Last 90 days</option>
                 <option value="last_12_months">Last 12 Months</option>
+                <option value="last_3_years">Last 3 Years</option>
                 <option value="ytd">Year To Date</option>
                 <option value="last_year">Last Year</option>
             </select>
@@ -136,6 +137,9 @@
                     case 'last_12_months':
                         //chart.options.scales.xAxes[0].time.unitStepSize = 14;
                         date_from.setDate(date_to.getDate() - 365);
+                        break;
+                    case 'last_3_years':
+                        date_from.setDate(date_to.getDate() - 365*3);
                         break;
                     case 'ytd':
                         //chart.options.scales.xAxes[0].time.unitStepSize = 14;
