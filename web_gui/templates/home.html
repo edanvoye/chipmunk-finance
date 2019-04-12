@@ -94,9 +94,12 @@
         });
     }
 
-    function format_currency(value) {
-        return parseFloat(Math.round(value * 100) / 100).toFixed(2);
-    }
+    function format_currency(value, currency=null) {
+      if (currency)
+         return parseFloat(Math.round(value * 100) / 100).toFixed(2) + ' ' + currency;
+      else
+         return parseFloat(Math.round(value * 100) / 100).toFixed(2);
+   }
 
     function load_latest_transactions(account_id, count) {
 
@@ -104,7 +107,7 @@
         $.getJSON(`/api/transactions/${account_id}?count=${count}`, function( data ) {
             $(`#transactions_${account_id}`).empty();
             data.forEach((item) => {
-                var item_html = `<div class="transaction ${item.uncleared?'uncleared':''} ${item.added_today?'new':''}">${item.date.substring(0,10)} <b>${item.type}</b> <i>${item.description}</i> <b>${format_currency(item.amount)} {{account_currency}}</b></div>`;
+                var item_html = `<div class="transaction ${item.uncleared?'uncleared':''} ${item.added_today?'new':''}">${item.date.substring(0,10)} <b>${item.type}</b> <i>${item.description}</i> <b>${format_currency(item.amount, item.currency)}</b></div>`;
                 $(`#transactions_${account_id}`).append(item_html);
             });
         });

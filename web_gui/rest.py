@@ -40,6 +40,7 @@ class AccountBalanceHistory(AuthResource):
             'id':account_id,
             'name':name,
             'currency':currency,
+            'currency_to_base':g.user.to_base_currency(currency),
             'description':description,
             'base_type':base_type,
             'history':[b for b in g.user.iter_historical_balance(account_id, args['count'], args['offset'])]}
@@ -54,15 +55,15 @@ class AccountBalanceHistoryByDate(AuthResource):
             'id':account_id,
             'name':name,
             'currency':currency,
+            'currency_to_base':g.user.to_base_currency(currency),
             'description':description,
             'base_type':base_type,
-            'history':[b for b in g.user.get_transactions_for_range(account_id, args['from'], args['to'])]}
+            'history':[b for b in g.user.get_eod_balance_for_range(account_id, args['from'], args['to'])]}
         return ret
 api.add_resource(AccountBalanceHistoryByDate, '/history_by_date/<int:account_id>')
 
 class AccountList(AuthResource):
     def get(self):
-# TODO We also need balance in the base currency + base_currency
         return [a for a in g.user.iter_accounts()]
 api.add_resource(AccountList, '/accounts')
 

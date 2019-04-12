@@ -5,6 +5,8 @@ import random
 import json
 import datetime
 
+from currency import currency_current_rate
+
 def daterange(start_date, end_date):
     for n in range(int ((end_date - start_date).days) + 1):
         yield start_date + datetime.timedelta(n)
@@ -106,6 +108,7 @@ class UserData():
                                         description TEXT NOT NULL,
                                         type TEXT NOT NULL,
                                         amount REAL,
+                                        currency TEXT,
                                         date TIMESTAMP,
                                         added TIMESTAMP,
                                         data TEXT,
@@ -384,28 +387,38 @@ class UserData():
         else:
             cur.execute(sql)
         for id,bank_id,name,atype,base_type,description,balance,currency,last_update,nb_transactions in cur.fetchall():
-            yield {'id':id, 'bank_id':bank_id, 'name':name, 'type':atype, 'base_type':base_type, 'balance':balance, 'description':description, 'currency':currency, 'transaction_count':nb_transactions, 'last_update':last_update}
+            yield {'id':id, 'bank_id':bank_id, 'name':name, 'type':atype, 'base_type':base_type, 'balance':balance, 'balance_base':self.to_base_currency(currency,balance), 'description':description, 'currency':currency, 'transaction_count':nb_transactions, 'last_update':last_update}
 
     def iter_positions(self, account_id):
         # TODO Add date query option
         cur = self.conn.cursor()
-        sql = """SELECT date,symbol,openQuantity,currentPrice,averageEntryPrice 
+        sql = """SELECT date,symbol,openQuantity,currentPrice,averageEntryPrice,currency
                  FROM positions
                  WHERE fk_account=? AND date=(SELECT MAX(date) FROM positions WHERE fk_account=?)
                  ORDER BY symbol ASC"""
         cur.execute(sql, (account_id,account_id))
-        for date,symbol,openQuantity,currentPrice,averageEntryPrice in cur.fetchall():
-            yield {'date':date, 'symbol':symbol, 'openQuantity':openQuantity, 'currentPrice':currentPrice, 'averageEntryPrice':averageEntryPrice}
+        for date,symbol,openQuantity,currentPrice,averageEntryPrice,currency in cur.fetchall():
+            yield {'date':date, 'symbol':symbol, 'openQuantity':openQuantity, 'currentPrice':currentPrice, 
+                    'currentPrice_base':self.to_base_currency(currency, currentPrice), 
+                    'averageEntryPrice':averageEntryPrice, 'currency':currency}
 
     def iter_transactions(self, account_id, limit=None, offset=0):
         cur = self.conn.cursor()
-        sql = "SELECT id,description,type,amount,date,added,uncleared FROM transactions as a WHERE fk_account=? ORDER BY date DESC, added DESC, id DESC"
+
+        # first get account currency
+        sql = 'SELECT currency FROM accounts WHERE id=? '
+        ret = cur.execute(sql, (account_id,))
+        account_currency = cur.fetchone()[0]
+
+        sql = "SELECT id,description,type,amount,currency,date,added,uncleared FROM transactions as a WHERE fk_account=? ORDER BY date DESC, added DESC, id DESC"
         if limit:
             sql = sql + ' LIMIT %d OFFSET %d' % (limit,offset)
         cur.execute(sql, (account_id,))
-        for id,description,ttype,amount,date,added,uncleared in cur.fetchall():
+        for id,description,ttype,amount,currency,date,added,uncleared in cur.fetchall():
             added_today = str(datetime.datetime.now().date()) == added[:10]
-            yield {'id':id, 'description':description, 'type':ttype, 'amount':amount, 'date':date, 'added':added, 'uncleared':uncleared, 'added_today':added_today}
+            if not currency:
+                currency = account_currency
+            yield {'id':id, 'description':description, 'type':ttype, 'amount':amount, 'currency':currency, 'date':date, 'added':added, 'uncleared':uncleared, 'added_today':added_today}
 
     def iter_historical_balance(self, account_id, limit=None, offset=0):
         cur = self.conn.cursor()
@@ -416,7 +429,7 @@ class UserData():
         for date,balance in cur.fetchall():
             yield {'date':date, 'balance':balance}
 
-    def get_transactions_for_range(self, account_id, date_from, date_to):
+    def get_eod_balance_for_range(self, account_id, date_from, date_to):
         cur = self.conn.cursor()
 
         # Get earliest Balance value for each account
@@ -431,7 +444,7 @@ class UserData():
             eod_balance = 0.0
 
             if d < datetime.datetime.strptime(earliest_date, '%Y-%m-%d').date():
-                #print('DEBUG Date is before all stored balances')
+                # TODO Handle different currencies
                 sql = '''SELECT sum(amount) FROM transactions 
                     WHERE fk_account=? 
                     AND strftime('%s',date)>strftime('%s',?)
@@ -473,12 +486,13 @@ class UserData():
         added = kwargs.get('added', datetime.datetime.now())
         data = json.dumps(kwargs.get('extra', {}))
         uncleared = 1 if kwargs.get('uncleared', False) else 0
+        currency = kwargs.get('currency')
 
         cur = self.conn.cursor()
         sql = ''' 
-            INSERT INTO transactions (bank_id,description,type,amount,date,added,uncleared,fk_account,data)
-              VALUES(?,?,?,?,?,?,?,?,?) '''
-        ret = cur.execute(sql, (transaction_id,description,ttype,amount,date,added,uncleared,account_id,data))
+            INSERT INTO transactions (bank_id,description,type,amount,currency,date,added,uncleared,fk_account,data)
+              VALUES(?,?,?,?,?,?,?,?,?,?) '''
+        ret = cur.execute(sql, (transaction_id,description,ttype,amount,currency,date,added,uncleared,account_id,data))
 
         self.conn.commit()
 
@@ -518,3 +532,6 @@ class UserData():
             SELECT name,currency,balance,description,base_type FROM accounts WHERE id=? '''
         ret = cur.execute(sql, (account_id,))
         return cur.fetchone()
+
+    def to_base_currency(self, currency, amount=1.0):
+        return amount * currency_current_rate(currency, self.base_currency())

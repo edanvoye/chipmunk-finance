@@ -1,7 +1,6 @@
 
 import os
 from storage import UserData
-from currency import currency_current_rate
 import time
 import datetime
 
@@ -187,7 +186,7 @@ class ChipmunkEngine():
         return total_added
 
     def to_base_currency(self, currency, amount):
-        return amount * currency_current_rate(currency, self.data.base_currency())
+        return self.data.to_base_currency(currency, amount)
 
     def create_account_update_async_action(self):
         action_id = self.data.action_create('account_update')

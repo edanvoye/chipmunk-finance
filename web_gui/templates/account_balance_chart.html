@@ -26,7 +26,7 @@
 
 {% if account_type=='investment' %}
 <div>
-   <div>Positions <span id="positions_sum"></span></div>
+   <div>Positions <span id="positions_sum"></span> {{base_currency}}</div>
    <div style="font-size:80%;" id="position_list"></div>
 </div>
 {% endif %}
@@ -132,7 +132,7 @@
       // Clear graph
       var new_data = {
          datasets: [{
-            label: 'Balance',
+            label: 'Balance ({{account_currency}})',
             backgroundColor: 'rgb(255, 99, 132)',
             borderColor: 'rgb(255, 99, 132)',
             data : [],
@@ -156,8 +156,11 @@
       
    }
 
-   function format_currency(value) {
-      return parseFloat(Math.round(value * 100) / 100).toFixed(2);
+   function format_currency(value, currency=null) {
+      if (currency)
+         return parseFloat(Math.round(value * 100) / 100).toFixed(2) + ' ' + currency;
+      else
+         return parseFloat(Math.round(value * 100) / 100).toFixed(2);
    }
 
    function bar(amount) {
@@ -171,7 +174,7 @@
       $.getJSON(`/api/transactions/${account_id}?count=${count}`, function( data ) {
          $("#transaction_list").empty();
          data.forEach((item) => {
-            var item_html = `<div class="transaction ${item.uncleared?'uncleared':''} ${item.added_today?'new':''}">${item.date.substring(0,10)} <b>${item.type}</b> <i>${item.description}</i> <b>${format_currency(item.amount)} {{account_currency}} ${bar(item.amount)}</b></div>`;
+            var item_html = `<div class="transaction ${item.uncleared?'uncleared':''} ${item.added_today?'new':''}">${item.date.substring(0,10)} <b>${item.type}</b> <i>${item.description}</i> <b>${format_currency(item.amount, item.currency)} ${bar(item.amount)}</b></div>`;
             $("#transaction_list").append(item_html);
          });
       });
@@ -182,14 +185,13 @@
          $("#position_list").empty();
          var sum = 0.0;
          data.forEach((item) => {
-            // TODO Position currency???
             var openPL = item.openQuantity * (item.currentPrice - item.averageEntryPrice);
             var cl = openPL>=0 ? 'positive_label' : 'negative_label';
-            var item_html = `<div class="position_label"><b>${item.symbol}</b> Quantity:${item.openQuantity} Price:${format_currency(item.currentPrice)} openPL:<span class="${cl}">${format_currency(openPL)}</span></div>`;
+            var item_html = `<div class="position_label"><b>${item.symbol}</b> Quantity:${item.openQuantity} Price:${format_currency(item.currentPrice, item.currency)} openPL:<span class="${cl}">${format_currency(openPL, item.currency)}</span></div>`;
             $("#position_list").append(item_html);
-            sum += item.openQuantity * item.currentPrice;
+            sum += item.openQuantity * item.currentPrice_base;
          });
-         $("#positions_sum").html(`${sum}`); // TODO in base currency
+         $("#positions_sum").html(`${format_currency(sum)}`);
       });
 //{% endif %}
    }

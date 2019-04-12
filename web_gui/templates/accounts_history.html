@@ -11,7 +11,7 @@
     
         <div><a href="/">&lt;&lt; Home</a></div>
          
-        <h2>Accounts</h2>
+        <h2>Accounts (amounts in {{base_currency}})</h2>
          
         <div>
             <select name="graph_date_range" onchange="load_account_data();">
@@ -180,7 +180,7 @@
                     var url = `/api/history_by_date/${item.id}?from=${date_from_s}&to=${date_to_s}`;
                     $.getJSON(url, function( data ) {
                         var dataset = {
-                            label: item.name || item.description,
+                            label: (item.name || item.description) + " {{base_currency}}",
                             backgroundColor: color,
                             borderColor: color,
                             lineTension: 0,
@@ -192,7 +192,7 @@
                             borderWidth: 2
                         }
                         data.history.forEach((item) => {
-                            dataset.data.push({x:moment(item.date).valueOf(), y:item.balance});
+                            dataset.data.push({x:moment(item.date).valueOf(), y:item.balance * data.currency_to_base});
                         });
                         chart.data.datasets.push(dataset);
                         chart.update();

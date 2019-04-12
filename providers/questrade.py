@@ -130,9 +130,9 @@ class QuestradePlugin(ProviderPlugin):
                         type=transaction['type'] + '/' + transaction['action'], 
                         amount=transaction['netAmount'], 
                         description=transaction['symbol'],
+                        currency=transaction['currency'],
                         extra= {
                             'details':transaction['description'],
-                            'currency':transaction['currency'],
                             'price':transaction['price'],
                             'quantity':transaction['quantity'],
                             'commission':transaction['commission'],

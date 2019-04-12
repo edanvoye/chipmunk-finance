@@ -24,14 +24,17 @@ def chart(account_id):
         account_name=name, 
         account_description=description,
         account_type=base_type,
+        base_currency=g.user.base_currency(),
         account_currency=currency)
 
 @app.route("/accounts")
 @auth.login_required
 def accounts():
-    return render_template('accounts.html')
+    return render_template('accounts.html',
+        base_currency=g.user.base_currency())
 
 @app.route("/accounts_history")
 @auth.login_required
 def accounts_history():
-    return render_template('accounts_history.html')
+    return render_template('accounts_history.html', 
+        base_currency=g.user.base_currency())

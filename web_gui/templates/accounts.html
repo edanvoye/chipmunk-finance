@@ -11,7 +11,7 @@
 
     <div><a href="/">&lt;&lt; Home</a></div>
      
-     <h2>Accounts</h2>
+     <h2>Accounts (amounts in {{base_currency}})</h2>
      
      <div class="graph_container">
         <div class="graph_item">
@@ -96,9 +96,7 @@
                 if (item.balance > 0) {
                     chart.data.datasets[0].backgroundColor.push(getColor(chart.data.labels.length));
                     chart.data.labels.push(item.name || item.description);
-                    chart.data.datasets[0].data.push(item.balance);
-// TODO Need to use the balance in the base currency
-// Display base currency on the page
+                    chart.data.datasets[0].data.push(item.balance_base);
                     i++;
                 }
             });
