@@ -83,6 +83,12 @@ class QuestradePlugin(ProviderPlugin):
                         # Get positions in this account
                         response = self.auth_request_get('accounts/%s/positions' % acc_id)
                         positions_data = response.json()
+                        positions = positions_data.get('positions', [])
+                        for pos in positions:
+                            response = self.auth_request_get('symbols/%s' % pos['symbolId'])
+                            sym = response.json().get('symbols')[0]
+                            pos['currency'] = sym.get('currency')
+
                         add_positions(acc_id, positions_data.get('positions', []))
 
         except Exception as e:

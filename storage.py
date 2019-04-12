@@ -147,6 +147,7 @@ class UserData():
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         date TIMESTAMP NOT NULL,
                         symbol TEXT NOT NULL,
+                        currency TEXT NOT NULL,
                         reported TIMESTAMP NOT NULL,
                         openQuantity INTEGER DEFAULT 0,
                         currentPrice REAL DEFAULT 0.0,
@@ -211,12 +212,13 @@ class UserData():
                  p.get('openQuantity',0),
                  p.get('currentPrice',0),
                  p.get('averageEntryPrice',0),
+                 p.get('currency'),
                  acct_id
                  ) for p in positions]
 
         sql = '''INSERT INTO positions(date, symbol, reported, 
-                    openQuantity, currentPrice, averageEntryPrice, 
-                    fk_account) VALUES(?,?,?,?,?,?,?)'''
+                    openQuantity, currentPrice, averageEntryPrice, currency,
+                    fk_account) VALUES(?,?,?,?,?,?,?,?)'''
         cur.executemany(sql, rows)
 
         self.conn.commit()
