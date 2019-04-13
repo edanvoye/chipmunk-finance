@@ -44,7 +44,19 @@
       type: 'line',
       data: {},
       options: {
-         elements: { point: { radius: 0 } },
+         tooltips: {
+            intersect: false,
+            callbacks: {
+                label: function(tooltipItem, data) {
+                    var label = data.datasets[tooltipItem.datasetIndex].label || '';
+                    if (label) {
+                        label += ' ';
+                    }
+                    label += Math.round(tooltipItem.yLabel * 100) / 100;
+                    return label;
+                }
+            }
+         },
          legend: {
             display: false
          },
@@ -83,10 +95,14 @@
                   labelString: 'Account Balance'
                },
                ticks: {
-                  beginAtZero: true,
+                  beginAtZero: false,
                   // Include a dollar sign in the ticks
                   callback: function(value, index, values) {
-                     return '{{account_currency}} ' + value.toFixed(2);
+                        if (value>1000000)
+                           return parseFloat(Math.round(value/1000000)).toFixed(1) + 'M';
+                        if (value>1000)
+                           return parseFloat(Math.round(value/1000)).toFixed(1) + 'k';
+                        return parseFloat(Math.round(value * 100) / 100).toFixed(2);
                   }
                }
             }]
@@ -138,12 +154,12 @@
       var new_data = {
          datasets: [{
             label: 'Balance ({{account_currency}})',
-            backgroundColor: 'rgb(255, 99, 132)',
-            borderColor: 'rgb(255, 99, 132)',
+            borderColor: '#5477af',
             data : [],
             type: 'line',
-            pointRadius: 0,
-            fill: false,
+            pointRadius: 2,
+            fill: true,
+            backgroundColor: '#354d72',
             lineTension: 0,
             borderWidth: 2
          }]
