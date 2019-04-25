@@ -4,6 +4,7 @@ import sqlite3
 import random
 import json
 import datetime
+import bcrypt
 
 from currency import currency_current_rate
 
@@ -27,10 +28,6 @@ def _cipher_from_password(password, salt):
     )
     key = base64.urlsafe_b64encode(kdf.derive(password.encode('utf-8')))
     return Fernet(key)
-
-def _sha1hash(s):
-    import hashlib
-    return hashlib.sha1(s.encode('utf-8')).hexdigest()
 
 class UserData():
 
@@ -66,7 +63,6 @@ class UserData():
                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                                         username TEXT NOT NULL,
                                         password_hash TEXT,
-                                        salt1 TEXT,
                                         salt2 TEXT,
                                         base_currency TEXT NOT NULL,
                                         db_version INTEGER NOT NULL
@@ -256,9 +252,9 @@ class UserData():
             raise Exception('Database file already exists')
 
         # Generate salt and password hash
-        salt1 = _sha1hash(str(random.random()))
-        salt2 = _sha1hash(str(random.random()))
-        password_hash = _sha1hash('%s%s' % (salt1,password))
+        salt1 = bcrypt.gensalt()
+        salt2 = bcrypt.gensalt()
+        password_hash = bcrypt.hashpw(password.encode('utf-8'), salt1)
 
         # Create database
         conn = sqlite3.connect(db_file, check_same_thread=False)
@@ -267,15 +263,15 @@ class UserData():
 
         # Create one row in user table
         sql = ''' 
-            INSERT INTO users(username,password_hash,salt1,salt2,db_version,base_currency)
-              VALUES(?,?,?,?,?,?) '''
+            INSERT INTO users(username,password_hash,salt2,db_version,base_currency)
+              VALUES(?,?,?,?,?) '''
         cur = conn.cursor()
-        ret = cur.execute(sql, (username,password_hash,salt1,salt2,self.DB_VERSION,base_currency))
+        ret = cur.execute(sql, (username,password_hash,salt2,self.DB_VERSION,base_currency))
 
         conn.commit()
                 
         self.conn = conn
-        self.cipher = _cipher_from_password(password,bytes.fromhex(salt2))
+        self.cipher = _cipher_from_password(password,salt2)
 
     def open(self, username, password):
 
@@ -291,21 +287,21 @@ class UserData():
 
         # Validate password with salt
         cur = conn.cursor()
-        cur.execute("SELECT salt1,salt2,password_hash,base_currency FROM users WHERE username=?", (username,))
+        cur.execute("SELECT salt2,password_hash,base_currency FROM users WHERE username=?", (username,))
         row = cur.fetchone()
 
         if not row:
             raise Exception('Database error, user not found')
 
-        salt1 = row[0]
-        salt2 = row[1]
+        salt2 = row[0]
+        password_hash = row[1]
 
-        if not row[2] == _sha1hash('%s%s' % (salt1,password)):
+        if not bcrypt.checkpw(password.encode('utf-8'), password_hash):
             raise Exception('Wrong password')
 
-        self._base_currency = row[3]
+        self._base_currency = row[2]
         self.conn = conn
-        self.cipher = _cipher_from_password(password,bytes.fromhex(salt2))
+        self.cipher = _cipher_from_password(password,salt2)
 
     def add_provider(self, name, data):
         cur = self.conn.cursor()
