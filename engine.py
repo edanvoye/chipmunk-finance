@@ -62,7 +62,7 @@ class ChipmunkEngine():
         if not provider_name in self.provider_classes:
             raise Exception('Provider name does not exist')
 
-        provider = self.provider_classes[provider_name](driver)
+        provider = self.provider_classes[provider_name]()
 
         temp_user_data = {}
 
