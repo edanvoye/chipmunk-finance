@@ -73,6 +73,7 @@
                 $("#msg_updating").hide();
                 $("#async_ok").show();
             } else if (data.status == 'user_query') {
+                $("#async_user_query").text(data.user_query);
                 $("#async_user_query_form").show();
             } else {
                 // continue waiting
