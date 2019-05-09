@@ -29,10 +29,12 @@ class QuestradePlugin(ProviderPlugin):
         # Press Add Device, get Token
 
         refresh_token = get_user_data('refresh_token')
-
         access = self.get_access_token(refresh_token)
         if not access:
-            raise Exception('Invalid refresh_token')
+            refresh_token = get_user_data('refresh_token', reset=True)
+            access = self.get_access_token(refresh_token)
+            if not access:
+                raise Exception('Invalid refresh_token')
 
         self.access_token = access['access_token']
         self.token_type = access['token_type']

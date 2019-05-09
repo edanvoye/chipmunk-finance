@@ -135,8 +135,8 @@ class ChipmunkEngine():
             uncleared_transactions = []
             uncleared_accounts = []
 
-            def get_user_data(label, is_password=False):
-                return data[label] if label in data else user_query('[%s] %s' % (name, label), is_password)
+            def get_user_data(label, is_password=False, reset=False):
+                return data[label] if label in data and not reset else user_query('[%s] %s' % (name, label), is_password)
             def store_user_data(label, value):
                 if data.get(label) != value:
                     data[label] = value
