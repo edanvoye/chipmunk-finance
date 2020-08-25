@@ -439,7 +439,7 @@ class UserData():
 
             eod_balance = 0.0
 
-            if d < datetime.datetime.strptime(earliest_date, '%Y-%m-%d').date():
+            if d < datetime.datetime.strptime(earliest_date.split(' ')[0], '%Y-%m-%d').date():
                 # TODO Handle different currencies
                 sql = '''SELECT sum(amount) FROM transactions 
                     WHERE fk_account=? 
