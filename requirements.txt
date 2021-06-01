@@ -3,6 +3,6 @@ Flask-HTTPAuth==3.2.4
 requests==2.21.0
 selenium==3.141.0
 six==1.12.0
-urllib3==1.24.2
+urllib3==1.26.5
 bcrypt
 cryptography
